@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sales Dashboard</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    background:#f4f6f9;
+    margin:20px;
+}
+
+h1{
+    text-align:center;
+    color:#333;
+}
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:15px;
+    margin-bottom:30px;
+}
+
+.card{
+    background:#fff;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.1);
+    text-align:center;
+}
+
+.card h3{
+    margin:0;
+    color:#666;
+    font-size:16px;
+}
+
+.card h2{
+    margin-top:10px;
+    color:#0d6efd;
+}
+
+.chart-box{
+    background:#fff;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom:30px;
+}
+
+.table-box{
+    background:#fff;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.1);
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+table th{
+    background:#0d6efd;
+    color:white;
+    padding:12px;
+}
+
+table td{
+    padding:10px;
+    border-bottom:1px solid #ddd;
+    text-align:center;
+}
+
+table tr:hover{
+    background:#f2f2f2;
+}
+
+.loading{
+    text-align:center;
+    color:#666;
+}
+</style>
+</head>
+
+<body>
+   <h1>➕ SRI RAGHAVENDRA MEDICALS</h1>
+
+<center> <h2>📊 Sales Dashboard</h2>            </center>
+
+<div class="cards">
+    <div class="card">
+        <h3>Today's Sales</h3>
+        <h2 id="todaySales">₹0</h2>
+    </div>
+
+    <div class="card">
+        <h3>Today's Profit</h3>
+        <h2 id="todayProfit">₹0</h2>
+    </div>
+
+    <div class="card">
+        <h3>Monthly Sales</h3>
+        <h2 id="monthSales">₹0</h2>
+    </div>
+
+    <div class="card">
+        <h3>Monthly Profit</h3>
+        <h2 id="monthProfit">₹0</h2>
+    </div>
+
+    <div class="card">
+        <h3>Profit %</h3>
+        <h2 id="profitPercent">0%</h2>
+    </div>
+</div>
+
+<div class="chart-box">
+    <canvas id="salesChart"></canvas>
+</div>
+
+<div class="table-box">
+    <h2>Sales Records</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Sales</th>
+                <th>Cost</th>
+                <th>Profit</th>
+            </tr>
+        </thead>
+        <tbody id="salesTable">
+            <tr>
+                <td colspan="4" class="loading">Loading...</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+// Pointing directly to your active sheet ID
+const SHEET_URL = "https://opensheet.elk.sh/1BZm4oEIDhg8clNe5RKahlF-E8x0NPbZUa0oJsk3NGdw/Sheet1";
+    
+fetch(SHEET_URL)
+.then(response => response.json())
+.then(data => {
+
+    let todaySales = 0;
+    let todayProfit = 0;
+
+    let monthSales = 0;
+    let monthProfit = 0;
+
+    let labels = [];
+    let salesData = [];
+
+    let tableRows = '';
+
+    const now = new Date();
+    const todayStr = now.toLocaleDateString('en-CA'); // Outputs YYYY-MM-DD
+    const currentMonth = now.getMonth();
+    const currentYear  = now.getFullYear();
+
+    data.forEach(row => {
+        // Skip entirely blank rows to prevent script crashes
+        if (!row.Date) return;
+
+        const sales = Number(row.Sales || 0);
+        const cost  = Number(row.Cost || 0);
+        const profit = sales - cost;
+        const rowDate = row.Date.trim(); 
+
+        labels.push(rowDate);
+        salesData.push(sales);
+
+        tableRows += `
+        <tr>
+            <td>${rowDate}</td>
+            <td>₹${sales.toFixed(2)}</td>
+            <td>₹${cost.toFixed(2)}</td>
+            <td>₹${profit.toFixed(2)}</td>
+        </tr>`;
+
+        if(rowDate === todayStr)
+        {
+            todaySales += sales;
+            todayProfit += profit;
+        }
+
+        const dateParts = rowDate.split('-');
+        if (dateParts.length === 3) {
+            const rYear = parseInt(dateParts[0], 10);
+            const rMonth = parseInt(dateParts[1], 10) - 1; 
+
+            if(rMonth === currentMonth && rYear === currentYear)
+            {
+                monthSales += sales;
+                monthProfit += profit;
+            }
+        }
+    });
+
+    document.getElementById('salesTable').innerHTML = tableRows;
+
+    const profitPercent = monthSales > 0 ? ((monthProfit / monthSales) * 100).toFixed(2) : 0;
+
+    document.getElementById('todaySales').innerHTML = "₹" + todaySales.toFixed(2);
+    document.getElementById('todayProfit').innerHTML = "₹" + todayProfit.toFixed(2);
+    document.getElementById('monthSales').innerHTML = "₹" + monthSales.toFixed(2);
+    document.getElementById('monthProfit').innerHTML = "₹" + monthProfit.toFixed(2);
+    document.getElementById('profitPercent').innerHTML = profitPercent + "%";
+
+    new Chart(
+        document.getElementById('salesChart'),
+        {
+            type:'line',
+            data:{
+                labels:labels,
+                datasets:[
+                {
+                    label:'Sales',
+                    data:salesData,
+                    borderColor: '#0d6efd',
+                    borderWidth:3,
+                    fill:false,
+                    tension:0.3
+                }]
+            },
+            options:{
+                responsive:true,
+                plugins:{
+                    legend:{
+                        display:true
+                    }
+                }
+            }
+        }
+    );
+
+})
+.catch(error => {
+    console.error(error);
+    document.getElementById('salesTable').innerHTML =
+    `<tr><td colspan="4">Unable to load Google Sheet data. Make sure it is shared to "Anyone with the link".</td></tr>`;
+});
+</script>
+
+</body>
+</html>
