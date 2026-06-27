@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SRI RAGHAVENDRA MEDICALS</title>
+    <style>
+        :root {
+            --primary: #0d6efd;
+            --success: #198754;
+            --danger: #dc3545;
+            --bg: #f8f9fa;
+            --card: #ffffff;
+            --text: #212529;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background: var(--bg); color: var(--text); padding-bottom: 80px; font-size: 14px; }
+        
+        header { background: #111; color: #fff; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 99; }
+        header h1 { font-size: 16px; }
+        
+        .loading-status { background: #fff3cd; color: #856404; text-align: center; padding: 10px; font-size: 13px; font-weight: bold; }
+        
+        .app-page { display: none; padding: 15px; max-width: 600px; margin: 0 auto; }
+        .app-page.active { display: block; }
+        
+        .card { background: var(--card); border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 15px; }
+        .card h2 { font-size: 14px; color: var(--primary); margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 6px; text-transform: uppercase; }
+        
+        .form-group { margin-bottom: 12px; position: relative; }
+        label { display: block; font-weight: 600; font-size: 11px; color: #6c757d; margin-bottom: 4px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 8px; font-size: 14px; background: #fff; }
+        input[readonly] { background: #e9ecef; color: #495057; }
+        
+        .form-row { display: flex; gap: 10px; }
+        .form-row .form-group { flex: 1; }
+        
+        .suggestions { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #ced4da; max-height: 180px; overflow-y: auto; z-index: 1000; border-radius: 8px; }
+        .suggestion-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #eee; }
+        .suggestion-item:hover { background: #f0f7ff; }
+
+        .btn { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; width: 100%; text-align: center; }
+        .btn-success { background: var(--success); }
+        .btn-secondary { background: #6c757d; }
+        .btn-danger { background: var(--danger); padding: 6px 10px; font-size: 12px; border-radius: 6px; width: auto; }
+        
+        .ledger-item { border-left: 4px solid var(--primary); padding: 10px; background: #f9fbfd; margin-bottom: 10px; border-radius: 0 8px 8px 0; display: flex; justify-content: space-between; align-items: center; }
+        .totals-box { padding: 16px; background: #e9ecef; border-radius: 8px; display: flex; justify-content: space-between; font-size: 14px; font-weight: bold; margin-bottom: 5px; }
+        .profit-box { color: var(--success); background: #eafaf1; }
+        
+        .search-bar-box { display: flex; gap: 8px; margin-bottom: 15px; }
+        .search-bar-box input { flex: 2; }
+        .search-bar-box button { flex: 1; padding: 0 10px; }
+        
+        .history-row { background: white; padding: 12px; border-radius: 8px; border-left: 4px solid #6c757d; margin-bottom: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .history-meta h4 { font-size: 13px; margin-bottom: 2px; }
+        .history-meta p { font-size: 11px; color: #777; }
+        
+        .receipt-body { background: #fff; border: 1px dashed #ccc; padding: 20px; border-radius: 4px; font-family: monospace; }
+        .receipt-header { text-align: center; margin-bottom: 15px; border-bottom: 1px dashed #000; padding-bottom: 10px; }
+        .receipt-line { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; }
+        
+        nav { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: #fff; border-top: 1px solid #dee2e6; display: flex; z-index: 999; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #6c757d; background: none; border: none; font-size: 11px; font-weight: bold; cursor: pointer; }
+        .nav-item.active { color: var(--primary); }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>➕ SRI RAGHAVENDRA MEDICALS</h1>
+</header>
+<div id="loadingStatus" class="loading-status">🔄 Syncing System Parameters...</div>
+
+<div id="billingPage" class="app-page active">
+    <div class="card">
+        <h2>New Transaction Summary</h2>
+        <div class="form-group">
+            <label>Current Bill Number</label>
+            <input type="text" id="displayBillNo" readonly style="font-weight: bold; color: var(--danger);">
+        </div>
+        <div class="form-group">
+            <label>Search Medicine</label>
+            <input type="text" id="medSearch" placeholder="Type name/ID to add..." autocomplete="off" disabled>
+            <div id="suggestions" class="suggestions" style="display: none;"></div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>Expiry</label>
+                <input type="text" id="medExpiry" readonly placeholder="N/A">
+            </div>
+            <div class="form-group">
+                <label>Pack Size</label>
+                <input type="text" id="medPack" readonly placeholder="N/A">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Unit Type</label>
+                <select id="medUnitType" onchange="calculateBasePrice()">
+                    <option value="Full Strip">Full Strip</option>
+                    <option value="Loose">Loose (Tablets)</option>
+                    <option value="Box">Box</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Qty</label>
+                <input type="number" id="medQty" value="1" min="1" oninput="calculateBasePrice()">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Final Value Amount (₹)</label>
+            <input type="number" id="medMRP" placeholder="0.00" step="0.01">
+        </div>
+        
+        <button class="btn" id="addItemBtn" onclick="addItemToInvoice()" disabled>Add Line Item</button>
+    </div>
+
+    <div class="card">
+        <h2>Active Basket</h2>
+        <div id="invoiceItemsContainer">
+            <p style="text-align: center; color: #888; font-style: italic; padding: 10px;">Basket empty.</p>
+        </div>
+        <div class="totals-box">
+            <span>Total Payable:</span>
+            <span id="grandTotalDisplay">₹0.00</span>
+        </div>
+        <div class="totals-box profit-box">
+            <span>Estimated Profit Margin:</span>
+            <span id="basketProfitDisplay">₹0.00</span>
+        </div>
+        <button class="btn btn-success" id="checkoutBtn" style="margin-top: 15px;" onclick="submitInvoiceData()" disabled>💾 Save & Log Entire Bill</button>
+    </div>
+</div>
+
+<div id="historyPage" class="app-page">
+    <div class="card">
+        <h2>🔍 Search & Review Bills</h2>
+        <div class="search-bar-box">
+            <input type="text" id="searchBillInput" placeholder="Enter Bill Number...">
+            <button class="btn" onclick="filterBillByNumber()">Find Bill</button>
+        </div>
+        <button class="btn btn-secondary" onclick="loadSalesHistory()" style="margin-bottom: 12px; font-size:12px; padding:8px;">🔄 Pull All Rows</button>
+        <div id="historyLogContainer"></div>
+    </div>
+</div>
+
+<div id="receiptPage" class="app-page">
+    <div class="card">
+        <h2>📄 Sales Invoice Record View</h2>
+        <button class="btn btn-secondary" onclick="switchPage('history')" style="margin-bottom:15px; padding:10px; font-size:12px;">⬅️ Back to Search List</button>
+        
+        <div class="receipt-body" id="receiptContent">
+        </div>
+    </div>
+</div>
+
+<nav>
+    <button class="nav-item active" id="navBill" onclick="switchPage('billing')">
+        <div>📝 New Bill</div>
+    </button>
+    <button class="nav-item" id="navHistory" onclick="switchPage('history')">
+        <div>📊 View Sales Bill</div>
+    </button>
+</nav>
+
+<script>
+const CORE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycby4kVfgKD263CaFxlkP6t6soil7MNvhv6Mpd2DB0aWu5lhjYcIScXxrDSndDsvHaoO4gA/exec";
+
+let inventoryDatabase = [];
+let selectedMedicine = null;
+let currentInvoiceItems = [];
+let globalSalesRowsCache = [];
+let currentBillNumber = "";
+
+function generateBillNumber() {
+    const prefix = "SRM";
+    const numericStamp = Math.floor(10000 + Math.random() * 90000);
+    currentBillNumber = `${prefix}-${numericStamp}`;
+    document.getElementById('displayBillNo').value = currentBillNumber;
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    generateBillNumber();
+    fetch(CORE_WEB_APP_URL)
+        .then(res => res.json())
+        .then(data => {
+            if (Array.isArray(data)) {
+                inventoryDatabase = data;
+                document.getElementById('loadingStatus').style.display = 'none';
+                document.getElementById('medSearch').disabled = false;
+                document.getElementById('addItemBtn').disabled = false;
+                document.getElementById('checkoutBtn').disabled = false;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            document.getElementById('loadingStatus').innerHTML = "⚠️ Cloud Pipeline offline.";
+        });
+});
+
+function switchPage(pageName) {
+    document.querySelectorAll('.app-page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    
+    if(pageName === 'billing') {
+        document.getElementById('billingPage').classList.add('active');
+        document.getElementById('navBill').classList.add('active');
+    } else if (pageName === 'history') {
+        document.getElementById('historyPage').classList.add('active');
+        document.getElementById('navHistory').classList.add('active');
+        loadSalesHistory();
+    } else if (pageName === 'receipt') {
+        document.getElementById('receiptPage').classList.add('active');
+    }
+}
+
+const searchInput = document.getElementById('medSearch');
+const suggestionsBox = document.getElementById('suggestions');
+
+searchInput.addEventListener('input', () => {
+    const query = searchInput.value.toLowerCase().trim();
+    suggestionsBox.innerHTML = '';
+    if (!query) { suggestionsBox.style.display = 'none'; return; }
+
+    const filtered = inventoryDatabase.filter(item => 
+        (item["Medicine Name"] && item["Medicine Name"].toLowerCase().includes(query)) ||
+        (item["ID"] && item["ID"].toString().toLowerCase().includes(query))
+    ).slice(0, 5);
+
+    if (filtered.length > 0) {
+        filtered.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'suggestion-item';
+            div.innerText = `${item["Medicine Name"]} (MRP: ₹${item["MRP"] || '0'})`;
+            div.addEventListener('click', () => selectProduct(item));
+            suggestionsBox.appendChild(div);
+        });
+        suggestionsBox.style.display = 'block';
+    } else {
+        suggestionsBox.style.display = 'none';
+    }
+});
+
+function selectProduct(product) {
+    selectedMedicine = product;
+    searchInput.value = product["Medicine Name"];
+    document.getElementById('medExpiry').value = product["Expiry Date"] || 'N/A';
+    document.getElementById('medPack').value = product["Pack Size"] || "10";
+    suggestionsBox.style.display = 'none';
+    calculateBasePrice();
+}
+
+function calculateBasePrice() {
+    if (!selectedMedicine) return;
+    const unitType = document.getElementById('medUnitType').value;
+    const qty = parseFloat(document.getElementById('medQty').value) || 0;
+    
+    // Explicit single loose tablet unit price lookup fallback
+    let basePrice = parseFloat(selectedMedicine["Selling Price"] || selectedMedicine["MRP"] || 0);
+    
+    if (unitType === "Loose") {
+        if (selectedMedicine["Single Unit Price"]) {
+            basePrice = parseFloat(selectedMedicine["Single Unit Price"]);
+        } else {
+            let numericPackSize = parseInt((selectedMedicine["Pack Size"] || "10").replace(/[^0-9]/g, ''), 10) || 10;
+            basePrice = basePrice / numericPackSize;
+        }
+    }
+    document.getElementById('medMRP').value = (basePrice * qty).toFixed(2);
+}
+
+function addItemToInvoice() {
+    if (!selectedMedicine) { alert("Select medicine line!"); return; }
+    const unitType = document.getElementById('medUnitType').value;
+    const qty = parseFloat(document.getElementById('medQty').value) || 1;
+    const totalSoldAmount = parseFloat(document.getElementById('medMRP').value) || 0;
+
+    // 1. Extract base Cost Price and Pack Size safely
+    let rawCostPrice = selectedMedicine["Cost Price"] || selectedMedicine["Purchase Price"] || 0;
+    let costPrice = parseFloat(rawCostPrice);
+    
+    let packSizeText = (selectedMedicine["Pack Size"] || "10").toString();
+    let numericPackSize = parseInt(packSizeText.replace(/[^0-9]/g, ''), 10) || 10;
+
+    let totalEstimatedCost = 0;
+
+    // 2. Exact loose tablet itemized formula matrix
+    if (unitType === "Loose") {
+        let singleUnitCost = costPrice / numericPackSize;
+        totalEstimatedCost = singleUnitCost * qty;
+    } else {
+        totalEstimatedCost = costPrice * qty;
+    }
+
+    // 3. Compute Net line item margins
+    let finalCalculatedProfit = totalSoldAmount - totalEstimatedCost;
+
+    currentInvoiceItems.push({
+        name: selectedMedicine["Medicine Name"],
+        unitType: unitType,
+        qty: qty,
+        total: totalSoldAmount,
+        profit: parseFloat(finalCalculatedProfit.toFixed(2))
+    });
+
+    renderInvoiceContainer();
+    
+    searchInput.value = '';
+    document.getElementById('medExpiry').value = '';
+    document.getElementById('medPack').value = '';
+    document.getElementById('medQty').value = 1;
+    document.getElementById('medMRP').value = '';
+    selectedMedicine = null;
+}
+
+function removeInvoiceItem(index) {
+    currentInvoiceItems.splice(index, 1);
+    renderInvoiceContainer();
+}
+
+function renderInvoiceContainer() {
+    const container = document.getElementById('invoiceItemsContainer');
+    let runningTotal = 0;
+    let runningProfit = 0;
+
+    if (currentInvoiceItems.length === 0) {
+        container.innerHTML = `<p style="text-align: center; color: #888; font-style: italic; padding: 10px;">Basket empty.</p>`;
+        document.getElementById('grandTotalDisplay').innerText = "₹0.00";
+        document.getElementById('basketProfitDisplay').innerText = "₹0.00";
+        return;
+    }
+
+    let itemsHtml = '';
+    currentInvoiceItems.forEach((item, index) => {
+        runningTotal += item.total;
+        runningProfit += item.profit;
+        itemsHtml += `
+            <div class="ledger-item">
+                <div class="ledger-info">
+                    <strong>${item.name}</strong>
+                    <div style="font-size:11px; color:#555;">${item.unitType} x ${item.qty}</div>
+                    <div style="font-size:11px; color:var(--success); font-weight:bold;">Profit: ₹${item.profit.toFixed(2)}</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span>₹${item.total.toFixed(2)}</span>
+                    <button class="btn-danger" onclick="removeInvoiceItem(${index})">❌</button>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = itemsHtml;
+    document.getElementById('grandTotalDisplay').innerText = "₹" + runningTotal.toFixed(2);
+    document.getElementById('basketProfitDisplay').innerText = "₹" + runningProfit.toFixed(2);
+}
+
+function submitInvoiceData() {
+    if (currentInvoiceItems.length === 0) { alert("Add lines before logging!"); return; }
+    document.getElementById('loadingStatus').style.display = 'block';
+    document.getElementById('loadingStatus').innerText = "⏳ Saving transaction logs...";
+
+    const invoicePayload = {
+        billNo: currentBillNumber,
+        date: new Date().toLocaleDateString('en-CA'),
+        items: currentInvoiceItems
+    };
+
+    fetch(CORE_WEB_APP_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(invoicePayload)
+    }).then(() => {
+        alert(`🎉 Transaction ${currentBillNumber} saved successfully!`);
+        currentInvoiceItems = [];
+        renderInvoiceContainer();
+        generateBillNumber(); 
+        document.getElementById('loadingStatus').style.display = 'none';
+    }).catch(err => {
+        console.error(err);
+        alert("Transmission error saving transaction updates.");
+    });
+}
+
+function loadSalesHistory() {
+    const container = document.getElementById('historyLogContainer');
+    container.innerHTML = `<p style="font-style:italic; text-align:center; color:#666;">Syncing data logs...</p>`;
+    
+    fetch(`${CORE_WEB_APP_URL}?action=getHistory`)
+        .then(res => res.json())
+        .then(data => {
+            globalSalesRowsCache = data.map(row => {
+                if (!row["Bill No"] || row["Bill No"].toString().trim() === "" || row["Bill No"] === "N/A") {
+                    row["Bill No"] = "OLD-RECORD";
+                }
+                return row;
+            });
+            renderHistoryRows(globalSalesRowsCache);
+        });
+}
+
+function renderHistoryRows(rows) {
+    const container = document.getElementById('historyLogContainer');
+    if (rows.length === 0) {
+        container.innerHTML = `<p style="text-align:center; color:#999; padding:10px;">No entries match this lookup context.</p>`;
+        return;
+    }
+
+    let uniqueBills = {};
+    rows.forEach(r => {
+        let bNo = r["Bill No"];
+        if (!uniqueBills[bNo]) {
+            uniqueBills[bNo] = { date: r["Date"], total: 0, profit: 0 };
+        }
+        uniqueBills[bNo].total += parseFloat(r["Total Value (₹)"] || r["total"] || 0);
+        uniqueBills[bNo].profit += parseFloat(r["Profit (₹)"] || r["profit"] || 0);
+    });
+
+    let html = '';
+    for (let bNo in uniqueBills) {
+        html += `
+            <div class="history-row">
+                <div class="history-meta">
+                    <h4>ID: ${bNo}</h4>
+                    <p>📅 ${uniqueBills[bNo].date ? uniqueBills[bNo].date.split("T")[0] : 'N/A'}</p>
+                    <p style="color:var(--success); font-weight:600;">Earned Profit: ₹${uniqueBills[bNo].profit.toFixed(2)}</p>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-weight:bold; margin-bottom:5px;">₹${uniqueBills[bNo].total.toFixed(2)}</div>
+                    <button class="btn" style="padding:4px 8px; font-size:11px;" onclick="viewReceipt('${bNo}')">View Bill</button>
+                </div>
+            </div>
+        `;
+    }
+    container.innerHTML = html;
+}
+
+function filterBillByNumber() {
+    const term = document.getElementById('searchBillInput').value.trim().toUpperCase();
+    if(!term) { loadSalesHistory(); return; }
+    const matched = globalSalesRowsCache.filter(r => r["Bill No"] && r["Bill No"].toString().toUpperCase().includes(term));
+    renderHistoryRows(matched);
+}
+
+function viewReceipt(billNumber) {
+    const matchedLines = globalSalesRowsCache.filter(r => r["Bill No"] === billNumber);
+    if(matchedLines.length === 0) { alert("Bill content references missing."); return; }
+    
+    const dateVal = matchedLines[0]["Date"] ? matchedLines[0]["Date"].split("T")[0] : 'N/A';
+    let subTotal = 0;
+    let netProfitTotal = 0;
+    
+    let itemsLinesHtml = '';
+    matchedLines.forEach(item => {
+        let lineTotal = parseFloat(item["Total Value (₹)"] || 0);
+        let lineProfit = parseFloat(item["Profit (₹)"] || 0);
+        subTotal += lineTotal;
+        netProfitTotal += lineProfit;
+        
+        itemsLinesHtml += `
+            <div class="receipt-line">
+                <span>${item["Medicine Name"]} (${item["Unit Type"] || 'Sale'} x ${item["Quantity Sold"] || 1})</span>
+                <span>₹${lineTotal.toFixed(2)}</span>
+            </div>
+            <div class="receipt-line" style="color:var(--success); font-size:11px; margin-bottom:8px; padding-left:10px;">
+                <span>↳ Earned Margin</span>
+                <span>₹${lineProfit.toFixed(2)}</span>
+            </div>
+        `;
+    });
+
+    const receiptMarkup = `
+        <div class="receipt-header">
+            <h3>SRI RAGHAVENDRA MEDICALS</h3>
+            <p>Smart Invoice Terminal Receipt</p>
+        </div>
+        <div class="receipt-line"><strong>BILL NO:</strong> <span>${billNumber}</span></div>
+        <div class="receipt-line"><strong>DATE:</strong> <span>${dateVal}</span></div>
+        <hr style="border-top:1px dashed #000; margin:10px 0;">
+        ${itemsLinesHtml}
+        <hr style="border-top:1px dashed #000; margin:10px 0;">
+        <div class="receipt-line" style="font-size:15px; font-weight:bold;">
+            <span>GRAND TOTAL:</span>
+            <span>₹${subTotal.toFixed(2)}</span>
+        </div>
+        <div class="receipt-line" style="font-size:13px; font-weight:bold; color:var(--success);">
+            <span>TOTAL NET PROFIT:</span>
+            <span>₹${netProfitTotal.toFixed(2)}</span>
+        </div>
+    `;
+    
+    document.getElementById('receiptContent').innerHTML = receiptMarkup;
+    switchPage('receipt');
+}
+</script>
+</body>
+</html>
