@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRI RAGHAVENDRA MEDICALS - VECTOR INFOGRAPHIC DASHBOARD</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --surface-bg: #0f172a;
+            --panel-bg: #1e293b;
+            --border-glow: rgba(255, 255, 255, 0.05);
+            
+            /* High-vibrancy Infographic Gradients */
+            --grad-teal: linear-gradient(135deg, #38bdf8, #0ea5e9);
+            --grad-purple: linear-gradient(135deg, #a855f7, #6366f1);
+            --grad-coral: linear-gradient(135deg, #f43f5e, #ec4899);
+            --grad-gold: linear-gradient(135deg, #eab308, #f97316);
+            
+            --txt-bright: #f8fafc;
+            --txt-dim: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--surface-bg);
+            color: var(--txt-bright);
+            padding-bottom: 60px;
+        }
+
+        /*==================================
+        INFOGRAPHIC NAVIGATION
+        ==================================*/
+        .vector-navbar {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border-bottom: 1px solid var(--border-glow);
+            padding: 20px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .vector-brand {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #38bdf8, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-vector {
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 700;
+            transition: transform 0.2s, opacity 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-vector-secondary { background: rgba(255, 255, 255, 0.05); color: var(--txt-bright); border: 1px solid rgba(255,255,255,0.1); }
+        .btn-vector-secondary:hover { background: rgba(255, 255, 255, 0.1); }
+        .btn-vector-primary { background: var(--grad-purple); color: #fff; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); }
+        .btn-vector-primary:hover { transform: translateY(-1px); opacity: 0.95; }
+
+        /*==================================
+        LAYOUT STRUCTURE
+        ==================================*/
+        .container {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 24px;
+        }
+
+        .pipeline-status {
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            color: #38bdf8;
+            padding: 16px 24px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .vector-header-tag {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 800;
+            color: #a855f7;
+            margin: 40px 0 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .vector-header-tag::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-glow);
+        }
+
+        /*==================================
+        VECTOR INFOGRAPHIC INFOCARDS
+        ==================================*/
+        .vector-row-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+
+        .infographic-card {
+            background: var(--panel-bg);
+            border-radius: 16px;
+            padding: 26px;
+            border: 1px solid var(--border-glow);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .infographic-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--grad-teal);
+        }
+
+        .card-teal::before { background: var(--grad-teal); }
+        .card-purple::before { background: var(--grad-purple); }
+        .card-coral::before { background: var(--grad-coral); }
+        .card-gold::before { background: var(--grad-gold); }
+
+        .metric-lbl {
+            font-size: 12px;
+            color: var(--txt-dim);
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-val {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--txt-bright);
+        }
+
+        .vector-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 14px;
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+
+        /*==================================
+        SLATES FOR CHARTS & TABLES
+        ==================================*/
+        .vector-slate {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-glow);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .vector-slate h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: var(--txt-bright);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .vector-table-wrapper {
+            overflow-x: auto;
+        }
+
+        .vector-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .vector-table th {
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--txt-dim);
+            padding: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            letter-spacing: 0.5px;
+        }
+
+        .vector-table td {
+            padding: 16px;
+            font-size: 14px;
+            color: var(--txt-bright);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .vector-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .vector-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .text-bold { font-weight: 700; }
+        .text-accent { color: #38bdf8; }
+    </style>
+</head>
+<body>
+
+<div class="vector-navbar">
+    <div class="vector-brand">
+        ➕  Sri Raghavendra Medicals &amp; General Store
+    </div>
+    <div class="nav-actions">
+        
+        <a href="billing_page.html" class="btn-vector btn-vector-primary">Run Billing Engine 📝</a>
+    </div>
+</div>
+
+<div class="container">
+    <div id="loadingStatus" class="pipeline-status">⚡ Mapping live cloud datastreams into infographic vector nodes...</div>
+
+    <div class="vector-header-tag">Live Operations Tracking</div>
+    
+    <div class="vector-row-cards">
+        <div class="infographic-card card-teal">
+            <div class="metric-lbl">Gross Revenue (Today)</div>
+            <div class="metric-val" id="daySales">₹0.00</div>
+        </div>
+        <div class="infographic-card card-purple">
+            <div class="metric-lbl">Net Profit Margin (Today)</div>
+            <div class="metric-val" id="dayProfit">₹0.00</div>
+            <div class="vector-badge" id="dayPct">0.00% Margin</div>
+        </div>
+    </div>
+
+    <div class="vector-slate">
+        <h3>📊 Continuous System Timeline Analytics</h3>
+        <div style="position: relative; height:280px; width:100%;">
+            <canvas id="infographicTrendChart"></canvas>
+        </div>
+    </div>
+
+    <div class="vector-header-tag">Historical Accumulations</div>
+
+    <div class="vector-row-cards">
+        <div class="infographic-card card-coral">
+            <div class="metric-lbl">Monthly Gross Revenue</div>
+            <div class="metric-val" id="monthSales" style="font-size: 24px;">₹0.00</div>
+        </div>
+        <div class="infographic-card card-coral">
+            <div class="metric-lbl">Monthly Net Profit</div>
+            <div class="metric-val" id="monthProfit" style="font-size: 24px;">₹0.00</div>
+        </div>
+        <div class="infographic-card card-gold">
+            <div class="metric-lbl">Annual Gross Revenue</div>
+            <div class="metric-val" id="yearSales" style="font-size: 24px;">₹0.00</div>
+        </div>
+        <div class="infographic-card card-gold">
+            <div class="metric-lbl">Annual Net Profit</div>
+            <div class="metric-val" id="yearProfit" style="font-size: 24px;">₹0.00</div>
+        </div>
+    </div>
+
+    <div class="vector-slate">
+        <h3>📋 Real-time Transaction Record Array</h3>
+        <div class="vector-table-wrapper">
+            <table class="vector-table">
+                <thead>
+                    <tr>
+                        <th>Invoice ID</th>
+                        <th>Date Reference</th>
+                        <th>Item Specifications</th>
+                        <th>Units</th>
+                        <th>Gross Balance</th>
+                    </tr>
+                </thead>
+                <tbody id="salesTableBody">
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--txt-dim); font-style: italic;">Awaiting network handshake...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+const CORE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycby4kVfgKD263CaFxlkP6t6soil7MNvhv6Mpd2DB0aWu5lhjYcIScXxrDSndDsvHaoO4gA/exec";
+let trendChartInstance = null;
+
+window.addEventListener('DOMContentLoaded', () => {
+    fetchLiveLogDataset();
+});
+
+function fetchLiveLogDataset() {
+    fetch(`${CORE_WEB_APP_URL}?action=getHistory`)
+        .then(res => res.json())
+        .then(data => {
+            console.clear();
+            console.log("TODAY :", new Date());
+            console.table(data);
+
+            document.getElementById('loadingStatus').style.display = 'none';
+            processAndRenderMetrics(data);
+        })
+        .catch(err => {
+            console.error(err);
+            document.getElementById('loadingStatus').innerHTML = "⚠️ Pipeline alignment lost. Check backend logs.";
+        });
+}
+
+function standardizeDate(rawDate) {
+    if (!rawDate) return "";
+
+    // Handle standard JavaScript Date objects
+    if (rawDate instanceof Date) {
+        const y = rawDate.getFullYear();
+        const m = String(rawDate.getMonth() + 1).padStart(2, "0");
+        const d = String(rawDate.getDate()).padStart(2, "0");
+        return `${y}-${m}-${d}`;
+    }
+
+    let str = String(rawDate).trim();
+
+    // Parse ISO Timestamps safely
+    if (str.includes("T")) {
+        return str.substring(0, 10);
+    }
+
+    str = str.replace(/\//g, "-");
+    let p = str.split("-");
+
+    if (p.length !== 3) return str;
+
+    // yyyy-mm-dd
+    if (p[0].length === 4) {
+        return `${p[0]}-${p[1].padStart(2,"0")}-${p[2].padStart(2,"0")}`;
+    }
+
+    // dd-mm-yyyy
+    if (p[2].length === 4) {
+        return `${p[2]}-${p[1].padStart(2,"0")}-${p[0].padStart(2,"0")}`;
+    }
+
+    return str;
+}
+        
+function processAndRenderMetrics(salesRows) {
+    // ---------- Target Date Alignment (IST) ----------
+    const now = new Date();
+    const ist = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+
+    const targetToday = ist.getFullYear() + "-" +
+                        String(ist.getMonth() + 1).padStart(2, "0") + "-" +
+                        String(ist.getDate()).padStart(2, "0");
+
+    const targetMonth = targetToday.substring(0, 7);
+    const yearPattern = targetToday.substring(0, 4);
+
+    let dSales = 0, dProfit = 0;
+    let mSales = 0, mProfit = 0;
+    let ySales = 0, yProfit = 0;
+
+    let timeSeriesMap = {};
+    let reverseRows = [...salesRows].reverse();
+    let tableHtml = "";
+
+    salesRows.forEach(row => {
+        let rawDate = row["Date"] || row["date"] || "";
+        if (!rawDate) return;
+
+        let dateStr = standardizeDate(rawDate);
+        if (!dateStr) return;
+
+        // Skip absolute future structural additions
+        if (dateStr > targetToday) return;
+
+        let val = parseFloat(row["Total Value (₹)"] || row["Total Value"] || row["total"] || row["Total"] || 0);
+        let prf = parseFloat(row["Profit (₹)"] || row["Profit"] || row["profit"] || 0);
+
+        // Year Metrics
+        if (dateStr.startsWith(yearPattern)) {
+            ySales += val;
+            yProfit += prf;
+
+            // Month Metrics
+            if (dateStr.substring(0, 7) === targetMonth) {
+                mSales += val;
+                mProfit += prf;
+
+                // Today Metrics
+                if (dateStr === targetToday) {
+                    dSales += val;
+                    dProfit += prf;
+                }
+            }
+        }
+
+        // Object Tracking Matrix Mapping
+        if (!timeSeriesMap[dateStr]) {
+            timeSeriesMap[dateStr] = { revenue: 0, profit: 0 };
+        }
+        timeSeriesMap[dateStr].revenue += val;
+        timeSeriesMap[dateStr].profit += prf;
+    });
+
+    // ---------- Update Cards UI ----------
+    const getPctStr = (profit, sales) => sales <= 0 ? "0.00%" : ((profit / sales) * 100).toFixed(2) + "%";
+
+    document.getElementById("daySales").innerText = "₹" + dSales.toLocaleString("en-IN", { minimumFractionDigits: 2 });
+    document.getElementById("dayProfit").innerText = "₹" + dProfit.toLocaleString("en-IN", { minimumFractionDigits: 2 });
+    document.getElementById("dayPct").innerText = getPctStr(dProfit, dSales) + " Margin";
+
+    document.getElementById("monthSales").innerText = "₹" + mSales.toLocaleString("en-IN", { minimumFractionDigits: 2 });
+    document.getElementById("monthProfit").innerText = "₹" + mProfit.toLocaleString("en-IN", { minimumFractionDigits: 2 });
+
+    document.getElementById("yearSales").innerText = "₹" + ySales.toLocaleString("en-IN", { minimumFractionDigits: 2 });
+    document.getElementById("yearProfit").innerText = "₹" + yProfit.toLocaleString("en-IN", { minimumFractionDigits: 2 });
+
+    // ---------- Populate Table ----------
+    let displayRows = reverseRows.filter(r => {
+        let dt = standardizeDate(r["Date"] || "");
+        return dt && dt <= targetToday;
+    }).slice(0, 15);
+
+    if (displayRows.length > 0) {
+        displayRows.forEach(row => {
+            let bNo = row["Bill No"] || row["Invoice ID"] || row["invoice"] || "N/A";
+            let dt = standardizeDate(row["Date"] || "");
+            let med = row["Medicine Name"] || row["medicine"] || "N/A";
+            let qty = row["Quantity Sold"] || row["qty"] || 1;
+            let val = parseFloat(row["Total Value (₹)"] || row["total"] || 0);
+
+            tableHtml += `
+            <tr>
+                <td class="text-bold text-accent">${bNo}</td>
+                <td>${dt}</td>
+                <td>${med}</td>
+                <td>${qty}</td>
+                <td class="text-bold">₹${val.toLocaleString('en-IN', {minimumFractionDigits:2})}</td>
+            </tr>
+            `;
+        });
+    } else {
+        tableHtml = `<tr><td colspan="5" style="text-align:center;">No data records found.</td></tr>`;
+    }
+    document.getElementById("salesTableBody").innerHTML = tableHtml;
+
+    // ---------- Chart Generation ----------
+    let sortedDates = Object.keys(timeSeriesMap).sort().slice(-7); 
+    let revenueDataArray = sortedDates.map(d => timeSeriesMap[d].revenue.toFixed(2));
+    let profitDataArray = sortedDates.map(d => timeSeriesMap[d].profit.toFixed(2));
+
+    renderLineChart(sortedDates, revenueDataArray, profitDataArray);
+}
+
+function renderLineChart(labelsArray, revData, prfData) {
+    const ctx = document.getElementById('infographicTrendChart').getContext('2d');
+    
+    if (trendChartInstance) {
+        trendChartInstance.destroy();
+    }
+
+    trendChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labelsArray,
+            datasets: [
+                {
+                    label: 'Gross Performance Line (₹)',
+                    data: revData,
+                    borderColor: '#38bdf8',
+                    backgroundColor: 'rgba(56, 189, 248, 0.05)',
+                    fill: true,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#38bdf8',
+                    tension: 0.3
+                },
+                {
+                    label: 'Net Returns Line (₹)',
+                    data: prfData,
+                    borderColor: '#a855f7',
+                    backgroundColor: 'transparent',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#a855f7',
+                    tension: 0.3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 12 } } }
+            },
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+            }
+        }
+    });
+}
+</script>
+</body>
+</html>
