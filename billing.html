@@ -81,7 +81,7 @@
         .receipt-line { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; }
         
         nav { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: #1e293b; border-top: 1px solid var(--border-glow); display: flex; z-index: 999; }
-        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--txt-dim); background: none; border: none; font-size: 11px; font-weight: bold; cursor: pointer; transition: color 0.2s; }
+        .nav-item, .nav-link-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--txt-dim); background: none; border: none; font-size: 11px; font-weight: bold; cursor: pointer; transition: color 0.2s; text-decoration: none; }
         .nav-item.active { color: var(--primary); background: rgba(255,255,255,0.01); }
     </style>
 </head>
@@ -105,13 +105,38 @@
                 <input type="date" id="transactionDate">
             </div>
         </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Unit Type</label>
+                <select id="medUnitType" onchange="handleUnitTypeChange()">
+                    <option value="Full Strip">Full Strip</option>
+                    <option value="Loose">Loose (Tablets)</option>
+                   
+                    <option value="General">General</option>
+                </select>
+            </div>
+            <div class="form-group" id="marginGroup" style="display: none;">
+                <label>Profit Margin</label>
+                <select id="medMargin">
+                    <option value="0.08">8%</option>
+                    <option value="0.10" selected>10%</option>
+                    <option value="0.12">12%</option>
+                    <option value="0.15">15%</option>
+                    <option value="0.18">18%</option>
+                    <option value="0.20">20%</option>
+                    <option value="0.25">25%</option>
+                </select>
+            </div>
+        </div>
+
         <div class="form-group">
-            <label>Search Medicine</label>
+            <label id="searchLabel">Search Medicine</label>
             <input type="text" id="medSearch" placeholder="Type name/ID to add..." autocomplete="off" disabled>
             <div id="suggestions" class="suggestions" style="display: none;"></div>
         </div>
         
-        <div class="form-row">
+        <div id="standardMetaRows" class="form-row">
             <div class="form-group">
                 <label>Expiry</label>
                 <input type="text" id="medExpiry" readonly placeholder="N/A">
@@ -124,22 +149,13 @@
 
         <div class="form-row">
             <div class="form-group">
-                <label>Unit Type</label>
-                <select id="medUnitType" onchange="calculateBasePrice()">
-                    <option value="Full Strip">Full Strip</option>
-                    <option value="Loose">Loose (Tablets)</option>
-                    <option value="Box">Box</option>
-                </select>
-            </div>
-            <div class="form-group">
                 <label>Qty</label>
                 <input type="number" id="medQty" value="1" min="1" oninput="calculateBasePrice()">
             </div>
-        </div>
-
-        <div class="form-group">
-            <label>Final Value Amount (₹)</label>
-            <input type="number" id="medMRP" placeholder="0.00" step="0.01">
+            <div class="form-group">
+                <label>Final Value Amount (₹)</label>
+                <input type="number" id="medMRP" placeholder="0.00" step="0.01">
+            </div>
         </div>
         
         <button class="btn" id="addItemBtn" onclick="addItemToInvoice()" disabled>Add Line Item</button>
@@ -204,6 +220,10 @@
         <div style="font-size: 16px; margin-bottom: 2px;">📊</div>
         <div>View Sales Bill</div>
     </button>
+    <a class="nav-link-item" href="https://jagadishmayachar7-create.github.io/sri_raghavendra_medical/dashboard.html">
+        <div style="font-size: 16px; margin-bottom: 2px;">📊</div>
+        <div>Dashboard</div>
+    </a>
 </nav>
 
 <script>
@@ -266,6 +286,31 @@ function switchPage(pageName) {
     }
 }
 
+function handleUnitTypeChange() {
+    const unitType = document.getElementById('medUnitType').value;
+    const marginGroup = document.getElementById('marginGroup');
+    const searchLabel = document.getElementById('searchLabel');
+    const searchInput = document.getElementById('medSearch');
+    const standardMetaRows = document.getElementById('standardMetaRows');
+    const priceInput = document.getElementById('medMRP');
+
+    if (unitType === "General") {
+        marginGroup.style.display = 'block';
+        searchLabel.innerText = "Medicine Name / Description";
+        searchInput.placeholder = "Type generic/custom item name directly...";
+        standardMetaRows.style.display = 'none';
+        priceInput.readOnly = false;
+        selectedMedicine = null; 
+    } else {
+        marginGroup.style.display = 'none';
+        searchLabel.innerText = "Search Medicine";
+        searchInput.placeholder = "Type name/ID to add...";
+        standardMetaRows.style.display = 'flex';
+        priceInput.readOnly = false;
+        calculateBasePrice();
+    }
+}
+
 function extractCleanDate(rawDate) {
     if (!rawDate) return "";
     if (rawDate instanceof Date) {
@@ -288,6 +333,12 @@ const searchInput = document.getElementById('medSearch');
 const suggestionsBox = document.getElementById('suggestions');
 
 searchInput.addEventListener('input', () => {
+    const unitType = document.getElementById('medUnitType').value;
+    if (unitType === "General") {
+        suggestionsBox.style.display = 'none';
+        return; 
+    }
+
     const query = searchInput.value.toLowerCase().trim();
     suggestionsBox.innerHTML = '';
     if (!query) { suggestionsBox.style.display = 'none'; return; }
@@ -321,10 +372,10 @@ function selectProduct(product) {
 }
 
 function calculateBasePrice() {
-    if (!selectedMedicine) return;
     const unitType = document.getElementById('medUnitType').value;
-    const qty = parseFloat(document.getElementById('medQty').value) || 0;
+    if (unitType === "General" || !selectedMedicine) return;
     
+    const qty = parseFloat(document.getElementById('medQty').value) || 0;
     let basePrice = parseFloat(selectedMedicine["Selling Price"] || selectedMedicine["MRP"] || 0);
     
     if (unitType === "Loose") {
@@ -339,29 +390,44 @@ function calculateBasePrice() {
 }
 
 function addItemToInvoice() {
-    if (!selectedMedicine) { alert("Select medicine line!"); return; }
     const unitType = document.getElementById('medUnitType').value;
+    const customItemName = searchInput.value.trim();
     const qty = parseFloat(document.getElementById('medQty').value) || 1;
     const totalSoldAmount = parseFloat(document.getElementById('medMRP').value) || 0;
 
-    let rawCostPrice = selectedMedicine["Cost Price"] || selectedMedicine["Purchase Price"] || 0;
-    let costPrice = parseFloat(rawCostPrice);
-    
-    let packSizeText = (selectedMedicine["Pack Size"] || "10").toString();
-    let numericPackSize = parseInt(packSizeText.replace(/[^0-9]/g, ''), 10) || 10;
+    if (!customItemName) { alert("Please enter or search a item name first!"); return; }
 
-    let totalEstimatedCost = 0;
-    if (unitType === "Loose") {
-        let singleUnitCost = costPrice / numericPackSize;
-        totalEstimatedCost = singleUnitCost * qty;
+    let itemName = "";
+    let costPrice = 0;
+    let numericPackSize = 10;
+    let finalCalculatedProfit = 0;
+
+    if (unitType === "General") {
+        itemName = customItemName;
+        const selectedMarginPct = parseFloat(document.getElementById('medMargin').value) || 0.10;
+        finalCalculatedProfit = totalSoldAmount * selectedMarginPct;
+        costPrice = totalSoldAmount - finalCalculatedProfit; 
     } else {
-        totalEstimatedCost = costPrice * qty;
+        if (!selectedMedicine) { alert("Select valid medicine from lookup container!"); return; }
+        itemName = selectedMedicine["Medicine Name"];
+        let rawCostPrice = selectedMedicine["Cost Price"] || selectedMedicine["Purchase Price"] || 0;
+        costPrice = parseFloat(rawCostPrice);
+        
+        let packSizeText = (selectedMedicine["Pack Size"] || "10").toString();
+        numericPackSize = parseInt(packSizeText.replace(/[^0-9]/g, ''), 10) || 10;
+
+        let totalEstimatedCost = 0;
+        if (unitType === "Loose") {
+            let singleUnitCost = costPrice / numericPackSize;
+            totalEstimatedCost = singleUnitCost * qty;
+        } else {
+            totalEstimatedCost = costPrice * qty;
+        }
+        finalCalculatedProfit = totalSoldAmount - totalEstimatedCost;
     }
 
-    let finalCalculatedProfit = totalSoldAmount - totalEstimatedCost;
-
     currentInvoiceItems.push({
-        name: selectedMedicine["Medicine Name"],
+        name: itemName,
         unitType: unitType,
         qty: qty,
         total: totalSoldAmount,
@@ -378,6 +444,11 @@ function addItemToInvoice() {
     document.getElementById('medQty').value = 1;
     document.getElementById('medMRP').value = '';
     selectedMedicine = null;
+    
+    if (unitType === "General") {
+        document.getElementById('medUnitType').value = "Full Strip";
+        handleUnitTypeChange();
+    }
 }
 
 function updateBasketItemValues(index) {
@@ -385,17 +456,24 @@ function updateBasketItemValues(index) {
     let qtyInput = parseFloat(document.getElementById(`basketQty-${index}`).value) || 0;
     let totalInput = parseFloat(document.getElementById(`basketTotal-${index}`).value) || 0;
     
-    let totalEstimatedCost = 0;
-    if (item.unitType === "Loose") {
-        let singleUnitCost = item.costPrice / item.numericPackSize;
-        totalEstimatedCost = singleUnitCost * qtyInput;
+    if (item.unitType === "General") {
+        const structuralMarginRatio = item.total > 0 ? (item.profit / item.total) : 0.10;
+        item.qty = qtyInput;
+        item.total = totalInput;
+        item.profit = parseFloat((totalInput * structuralMarginRatio).toFixed(2));
+        item.costPrice = totalInput - item.profit;
     } else {
-        totalEstimatedCost = item.costPrice * qtyInput;
+        let totalEstimatedCost = 0;
+        if (item.unitType === "Loose") {
+            let singleUnitCost = item.costPrice / item.numericPackSize;
+            totalEstimatedCost = singleUnitCost * qtyInput;
+        } else {
+            totalEstimatedCost = item.costPrice * qtyInput;
+        }
+        item.qty = qtyInput;
+        item.total = totalInput;
+        item.profit = parseFloat((totalInput - totalEstimatedCost).toFixed(2));
     }
-    
-    item.qty = qtyInput;
-    item.total = totalInput;
-    item.profit = parseFloat((totalInput - totalEstimatedCost).toFixed(2));
     
     document.getElementById(`profitLabel-${index}`).innerText = `Profit: ₹${item.profit.toFixed(2)}`;
     recomputeGrandTotalsOnly();
@@ -519,7 +597,6 @@ function applyCombinedFilters() {
     
     let filteredRows = globalSalesRowsCache;
 
-    // Apply structured alignment against selected date criteria
     if (dateInputVal) {
         filteredRows = filteredRows.filter(row => {
             let recordDateStr = extractCleanDate(row["Date"]);
@@ -527,7 +604,6 @@ function applyCombinedFilters() {
         });
     }
 
-    // Secondary layer text verification block
     if (searchBillTerm) {
         filteredRows = filteredRows.filter(row => 
             row["Bill No"] && row["Bill No"].toString().toUpperCase().includes(searchBillTerm)
