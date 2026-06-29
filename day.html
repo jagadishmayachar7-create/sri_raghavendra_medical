@@ -201,6 +201,7 @@
             display: grid;
             grid-template-columns: 2fr 1fr;
             gap: 24px;
+            margin-bottom: 24px;
         }
 
         @media (max-width: 968px) {
@@ -214,7 +215,6 @@
             border: 1px solid var(--border-glow);
             border-radius: 16px;
             padding: 30px;
-            margin-bottom: 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
@@ -258,6 +258,43 @@
             color: #10b981;
             font-weight: bold;
             font-size: 16px;
+        }
+
+        /*==================================
+        TRANSACTION LOG TABLE
+        ==================================*/
+        .table-responsive {
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .data-table th {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--txt-dim);
+            padding: 14px 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .data-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--txt-bright);
+            font-weight: 600;
+        }
+
+        .data-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.02);
         }
     </style>
 </head>
@@ -320,9 +357,28 @@
             <span class="sub-lbl" id="checklistSubtext">Highest volume item metrics.</span>
             
             <ul class="item-list" id="topItemsChecklist">
-                </ul>
+            </ul>
         </div>
 
+    </div>
+
+    <div class="vector-slate">
+        <h3>📋 Item Entry Log for Selected Date</h3>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Bill / Invoice No</th>
+                        <th>Medicine Name</th>
+                        <th>Quantity Sold</th>
+                        <th>Total Value</th>
+                        <th>Calculated Profit</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionTableBody">
+                    </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -391,9 +447,9 @@ function processDailyNode(targetDate) {
     let dailyProfit = 0;
     let itemsCount = 0;
     
-    // Dynamic object map to track whatever item names show up for this date
     let itemQuantitiesMap = {};
     let distinctBills = new Set();
+    let tableHtml = ""; // To build the transaction dynamic log strings
 
     cachedSalesData.forEach(row => {
         let rawDate = row["Date"] || row["date"] || "";
@@ -405,21 +461,31 @@ function processDailyNode(targetDate) {
         let val = parseFloat(row["Total Value (₹)"] || row["Total Value"] || row["total"] || row["Total"] || 0);
         let prf = parseFloat(row["Profit (₹)"] || row["Profit"] || row["profit"] || 0);
         let qty = parseInt(row["Quantity Sold"] || row["qty"] || 1);
-        let bNo = row["Bill No"] || row["Invoice ID"] || row["invoice"] || null;
+        let bNo = row["Bill No"] || row["Invoice ID"] || row["invoice"] || "N/A";
         let medName = String(row["Medicine Name"] || row["medicine"] || "Unknown Medicine").trim();
 
         dailyRevenue += val;
         dailyProfit += prf;
         itemsCount += qty;
         
-        if (bNo) {
+        if (bNo && bNo !== "N/A") {
             distinctBills.add(bNo);
         }
 
-        // Dynamically log and add up medicine quantities
         if (medName) {
             itemQuantitiesMap[medName] = (itemQuantitiesMap[medName] || 0) + qty;
         }
+
+        // Build active rows for table display
+        tableHtml += `
+            <tr>
+                <td style="color:#38bdf8;">#${bNo}</td>
+                <td>${medName}</td>
+                <td>${qty}</td>
+                <td>₹${val.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</td>
+                <td style="color:#10b981;">₹${prf.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</td>
+            </tr>
+        `;
     });
 
     let billsCount = distinctBills.size || (dailyRevenue > 0 ? 1 : 0);
@@ -449,6 +515,7 @@ function processDailyNode(targetDate) {
         chartDataValues = [0];
         document.getElementById("topItemsChecklist").innerHTML = `<li class="item-row" style="color:var(--txt-dim); font-style:italic;">No items sold on this date.</li>`;
         document.getElementById("checklistSubtext").innerText = "Zero sales records identified.";
+        document.getElementById("transactionTableBody").innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--txt-dim); font-style:italic; padding:30px 0;">No ledger items recorded for this date block.</td></tr>`;
     } else {
         // Build the dynamic UI sidebar checklist elements
         let checklistHtml = "";
@@ -457,6 +524,9 @@ function processDailyNode(targetDate) {
         });
         document.getElementById("topItemsChecklist").innerHTML = checklistHtml;
         document.getElementById("checklistSubtext").innerText = "Top performance variants for selected period.";
+        
+        // Populate the data entries table
+        document.getElementById("transactionTableBody").innerHTML = tableHtml;
     }
 
     renderHorizontalChart(chartLabels, chartDataValues);
@@ -469,7 +539,6 @@ function renderHorizontalChart(labels, dataValues) {
         barChartInstance.destroy();
     }
     
-    // Pick responsive hex colors for high visibility gradients
     const colorPalette = ['#38bdf8', '#0ea5e9', '#a855f7', '#6366f1', '#f43f5e', '#eab308'];
     
     barChartInstance = new Chart(ctx, {
