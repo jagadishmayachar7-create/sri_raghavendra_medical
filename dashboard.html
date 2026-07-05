@@ -252,7 +252,6 @@
         ➕  Sri Raghavendra Medicals &amp; General Store
     </div>
     <div class="nav-actions">
-        
         <a href="https://jagadishmayachar7-create.github.io/sri_raghavendra_medical/billing.html" class="btn-vector btn-vector-primary">Run Billing Engine 📝</a>
         <a href="https://jagadishmayachar7-create.github.io/sri_raghavendra_medical/day.html" class="btn-vector btn-vector-primary">Daily Chart 📝</a>
     </div>
@@ -292,6 +291,7 @@
         <div class="infographic-card card-coral">
             <div class="metric-lbl">Monthly Net Profit</div>
             <div class="metric-val" id="monthProfit" style="font-size: 24px;">₹0.00</div>
+            <div class="vector-badge" id="monthPct">0.00% Margin</div>
         </div>
         <div class="infographic-card card-gold">
             <div class="metric-lbl">Annual Gross Revenue</div>
@@ -300,6 +300,7 @@
         <div class="infographic-card card-gold">
             <div class="metric-lbl">Annual Net Profit</div>
             <div class="metric-val" id="yearProfit" style="font-size: 24px;">₹0.00</div>
+            <div class="vector-badge" id="yearPct">0.00% Margin</div>
         </div>
     </div>
 
@@ -354,7 +355,6 @@ function fetchLiveLogDataset() {
 function standardizeDate(rawDate) {
     if (!rawDate) return "";
 
-    // Handle standard JavaScript Date objects
     if (rawDate instanceof Date) {
         const y = rawDate.getFullYear();
         const m = String(rawDate.getMonth() + 1).padStart(2, "0");
@@ -364,7 +364,6 @@ function standardizeDate(rawDate) {
 
     let str = String(rawDate).trim();
 
-    // Parse ISO Timestamps safely
     if (str.includes("T")) {
         return str.substring(0, 10);
     }
@@ -374,12 +373,10 @@ function standardizeDate(rawDate) {
 
     if (p.length !== 3) return str;
 
-    // yyyy-mm-dd
     if (p[0].length === 4) {
         return `${p[0]}-${p[1].padStart(2,"0")}-${p[2].padStart(2,"0")}`;
     }
 
-    // dd-mm-yyyy
     if (p[2].length === 4) {
         return `${p[2]}-${p[1].padStart(2,"0")}-${p[0].padStart(2,"0")}`;
     }
@@ -388,7 +385,6 @@ function standardizeDate(rawDate) {
 }
         
 function processAndRenderMetrics(salesRows) {
-    // ---------- Target Date Alignment (IST) ----------
     const now = new Date();
     const ist = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
 
@@ -414,23 +410,19 @@ function processAndRenderMetrics(salesRows) {
         let dateStr = standardizeDate(rawDate);
         if (!dateStr) return;
 
-        // Skip absolute future structural additions
         if (dateStr > targetToday) return;
 
         let val = parseFloat(row["Total Value (₹)"] || row["Total Value"] || row["total"] || row["Total"] || 0);
         let prf = parseFloat(row["Profit (₹)"] || row["Profit"] || row["profit"] || 0);
 
-        // Year Metrics
         if (dateStr.startsWith(yearPattern)) {
             ySales += val;
             yProfit += prf;
 
-            // Month Metrics
             if (dateStr.substring(0, 7) === targetMonth) {
                 mSales += val;
                 mProfit += prf;
 
-                // Today Metrics
                 if (dateStr === targetToday) {
                     dSales += val;
                     dProfit += prf;
@@ -438,7 +430,6 @@ function processAndRenderMetrics(salesRows) {
             }
         }
 
-        // Object Tracking Matrix Mapping
         if (!timeSeriesMap[dateStr]) {
             timeSeriesMap[dateStr] = { revenue: 0, profit: 0 };
         }
@@ -446,20 +437,22 @@ function processAndRenderMetrics(salesRows) {
         timeSeriesMap[dateStr].profit += prf;
     });
 
-    // ---------- Update Cards UI ----------
     const getPctStr = (profit, sales) => sales <= 0 ? "0.00%" : ((profit / sales) * 100).toFixed(2) + "%";
 
+    // Update Cards UI
     document.getElementById("daySales").innerText = "₹" + dSales.toLocaleString("en-IN", { minimumFractionDigits: 2 });
     document.getElementById("dayProfit").innerText = "₹" + dProfit.toLocaleString("en-IN", { minimumFractionDigits: 2 });
     document.getElementById("dayPct").innerText = getPctStr(dProfit, dSales) + " Margin";
 
     document.getElementById("monthSales").innerText = "₹" + mSales.toLocaleString("en-IN", { minimumFractionDigits: 2 });
     document.getElementById("monthProfit").innerText = "₹" + mProfit.toLocaleString("en-IN", { minimumFractionDigits: 2 });
+    document.getElementById("monthPct").innerText = getPctStr(mProfit, mSales) + " Margin";
 
     document.getElementById("yearSales").innerText = "₹" + ySales.toLocaleString("en-IN", { minimumFractionDigits: 2 });
     document.getElementById("yearProfit").innerText = "₹" + yProfit.toLocaleString("en-IN", { minimumFractionDigits: 2 });
+    document.getElementById("yearPct").innerText = getPctStr(yProfit, ySales) + " Margin";
 
-    // ---------- Populate Table ----------
+    // Populate Table
     let displayRows = reverseRows.filter(r => {
         let dt = standardizeDate(r["Date"] || "");
         return dt && dt <= targetToday;
@@ -488,7 +481,7 @@ function processAndRenderMetrics(salesRows) {
     }
     document.getElementById("salesTableBody").innerHTML = tableHtml;
 
-    // ---------- Chart Generation ----------
+    // Chart Generation
     let sortedDates = Object.keys(timeSeriesMap).sort().slice(-7); 
     let revenueDataArray = sortedDates.map(d => timeSeriesMap[d].revenue.toFixed(2));
     let profitDataArray = sortedDates.map(d => timeSeriesMap[d].profit.toFixed(2));
