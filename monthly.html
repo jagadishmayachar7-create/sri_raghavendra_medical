@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sri Raghavendra Medicals - Monthly Snapshot</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --surface-bg: #0f172a;
+            --panel-bg: #1e293b;
+            --border-glow: rgba(255, 255, 255, 0.05);
+            
+            /* High-vibrancy Infographic Gradients */
+            --grad-teal: linear-gradient(135deg, #38bdf8, #0ea5e9);
+            --grad-purple: linear-gradient(135deg, #a855f7, #6366f1);
+            --grad-coral: linear-gradient(135deg, #f43f5e, #ec4899);
+            --grad-gold: linear-gradient(135deg, #eab308, #f97316);
+            --grad-green: linear-gradient(135deg, #10b981, #059669);
+            
+            --txt-bright: #f8fafc;
+            --txt-dim: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--surface-bg);
+            color: var(--txt-bright);
+            padding-bottom: 60px;
+        }
+
+        /*==================================
+        NAVIGATION
+        ==================================*/
+        .vector-navbar {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border-bottom: 1px solid var(--border-glow);
+            padding: 20px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .vector-brand {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #38bdf8, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-vector {
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 700;
+            transition: transform 0.2s, opacity 0.2s;
+            border: none;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.05); 
+            color: var(--txt-bright); 
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .btn-vector:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-1px); }
+
+        /*==================================
+        MONTH FILTER CONTROLLER
+        ==================================*/
+        .filter-panel {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid var(--border-glow);
+            border-radius: 12px;
+            padding: 16px 24px;
+            margin-top: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            backdrop-filter: blur(8px);
+        }
+
+        .filter-panel label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--txt-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .vector-input-month {
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--txt-bright);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .vector-input-month:focus {
+            border-color: #38bdf8;
+        }
+
+        /*==================================
+        LAYOUT STRUCTURE
+        ==================================*/
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .vector-header-tag {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 800;
+            color: #a855f7;
+            margin: 40px 0 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .vector-header-tag::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-glow);
+        }
+
+        /*==================================
+        SUMMARY CARDS
+        ==================================*/
+        .vector-row-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+
+        .infographic-card {
+            background: var(--panel-bg);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border-glow);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .infographic-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+        }
+
+        .card-teal::before { background: var(--grad-teal); }
+        .card-purple::before { background: var(--grad-purple); }
+        .card-green::before { background: var(--grad-green); }
+        .card-coral::before { background: var(--grad-coral); }
+        .card-gold::before { background: var(--grad-gold); }
+
+        .metric-lbl {
+            font-size: 11px;
+            color: var(--txt-dim);
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-val {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--txt-bright);
+        }
+
+        /*==================================
+        VISUAL SPLIT LAYOUT
+        ==================================*/
+        .dashboard-split {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 968px) {
+            .dashboard-split {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .vector-slate {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-glow);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .vector-slate h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: var(--txt-bright);
+        }
+
+        .sub-lbl {
+            font-size: 13px;
+            color: var(--txt-dim);
+            margin-top: -18px;
+            margin-bottom: 24px;
+            display: block;
+        }
+
+        /*==================================
+        FAST MOVING ITEMS LIST
+        ==================================*/
+        .item-list {
+            list-style: none;
+        }
+
+        .item-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .item-row:last-child {
+            border-bottom: none;
+        }
+
+        .icon-check {
+            color: #10b981;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        /*==================================
+        TRANSACTION LOG TABLE
+        ==================================*/
+        .table-responsive {
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .data-table th {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--txt-dim);
+            padding: 14px 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .data-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--txt-bright);
+            font-weight: 600;
+        }
+
+        .data-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+    </style>
+</head>
+<body>
+
+<div class="vector-navbar">
+    <div class="vector-brand">
+        ➕ Sri Raghavendra Medicals &amp; General Store
+    </div>
+    <a href="https://jagadishmayachar7-create.github.io/sri_raghavendra_medical/dashboard.html" class="btn-vector">← Back to Dashboard</a>
+</div>
+
+<div class="container">
+    
+    <div class="filter-panel">
+        <label for="snapshotMonth">Target Month View Node:</label>
+        <input type="month" id="snapshotMonth" class="vector-input-month">
+    </div>
+
+    <div class="vector-header-tag" id="sectionHeader">Establishing Handshake with Data Pipeline...</div>
+    
+    <div class="vector-row-cards">
+        <div class="infographic-card card-teal">
+            <div class="metric-lbl">Monthly Revenue</div>
+            <div class="metric-val" id="lblRevenue">₹0.00</div>
+        </div>
+        <div class="infographic-card card-purple">
+            <div class="metric-lbl">Monthly Profit</div>
+            <div class="metric-val" id="lblProfit">₹0.00</div>
+        </div>
+        <div class="infographic-card card-green">
+            <div class="metric-lbl">Profit Margin</div>
+            <div class="metric-val" id="lblMargin">0.00%</div>
+        </div>
+        <div class="infographic-card card-coral">
+            <div class="metric-lbl">Avg Revenue / Day</div>
+            <div class="metric-val" id="lblAvgRevenue">₹0.00</div>
+        </div>
+        <div class="infographic-card card-gold">
+            <div class="metric-lbl">Avg Profit / Day</div>
+            <div class="metric-val" id="lblAvgProfit">₹0.00</div>
+        </div>
+        <div class="infographic-card card-teal">
+            <div class="metric-lbl">Total Items Sold</div>
+            <div class="metric-val" id="lblItems">0</div>
+        </div>
+    </div>
+
+    <div class="dashboard-split">
+        
+        <div class="vector-slate">
+            <h3>📊 Daily Performance Allocation Trend Chart</h3>
+            <div style="position: relative; height:340px; width:100%;">
+                <canvas id="monthlyTrendChart"></canvas>
+            </div>
+        </div>
+
+        <div class="vector-slate">
+            <h3>🔥 Monthly Top Drugs</h3>
+            <span class="sub-lbl" id="checklistSubtext">Highest volume items metrics.</span>
+            
+            <ul class="item-list" id="topItemsChecklist">
+            </ul>
+        </div>
+
+    </div>
+
+    <div class="vector-slate">
+        <h3>📋 Item Entry Log for Selected Month</h3>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Bill / Invoice No</th>
+                        <th>Date Reference</th>
+                        <th>Medicine Name</th>
+                        <th>Quantity Sold</th>
+                        <th>Total Value</th>
+                        <th>Calculated Profit</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+const CORE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycby4kVfgKD263CaFxlkP6t6soil7MNvhv6Mpd2DB0aWu5lhjYcIScXxrDSndDsvHaoO4gA/exec";
+let trendChartInstance = null;
+let cachedSalesData = []; 
+
+document.addEventListener('DOMContentLoaded', () => {
+    const now = new Date();
+    const istOffset = 5.5 * 60 * 60 * 1000; 
+    const istDate = new Date(now.getTime() + istOffset);
+    
+    // Set format YYYY-MM
+    const currentMonthStr = istDate.toISOString().substring(0, 7);
+    
+    const monthInput = document.getElementById('snapshotMonth');
+    monthInput.value = currentMonthStr;
+    monthInput.max = currentMonthStr; 
+
+    fetchLiveDataset(currentMonthStr);
+
+    monthInput.addEventListener('change', (e) => {
+        processMonthlyNode(e.target.value);
+    });
+});
+
+function fetchLiveDataset(initialTargetMonth) {
+    const header = document.getElementById('sectionHeader');
+    header.innerText = "⚡ Syncing Live Cloud Datastreams...";
+
+    fetch(`${CORE_WEB_APP_URL}?action=getHistory`)
+        .then(res => res.json())
+        .then(data => {
+            cachedSalesData = data; 
+            processMonthlyNode(initialTargetMonth);
+        })
+        .catch(err => {
+            console.error("Data tracking failure:", err);
+            header.innerText = "⚠️ Pipeline Alignment Lost. Check API access endpoints.";
+        });
+}
+
+function standardizeDate(rawDate) {
+    if (!rawDate) return "";
+    if (rawDate instanceof Date) {
+        const y = rawDate.getFullYear();
+        const m = String(rawDate.getMonth() + 1).padStart(2, "0");
+        const d = String(rawDate.getDate()).padStart(2, "0");
+        return `${y}-${m}-${d}`;
+    }
+    let str = String(rawDate).trim();
+    if (str.includes("T")) return str.substring(0, 10);
+    str = str.replace(/\//g, "-");
+    let p = str.split("-");
+    if (p.length !== 3) return str;
+    if (p[0].length === 4) return `${p[0]}-${p[1].padStart(2,"0")}-${p[2].padStart(2,"0")}`;
+    if (p[2].length === 4) return `${p[2]}-${p[1].padStart(2,"0")}-${p[0].padStart(2,"0")}`;
+    return str;
+}
+
+function getDaysInMonth(year, month) {
+    return new Date(year, month, 0).getDate();
+}
+
+function processMonthlyNode(targetMonth) {
+    const parts = targetMonth.split("-");
+    const targetYear = parseInt(parts[0]);
+    const targetMonthNum = parseInt(parts[1]);
+    const totalDaysInMonth = getDaysInMonth(targetYear, targetMonthNum);
+
+    document.getElementById('sectionHeader').innerText = `Performance Summary Block: ${targetMonth}`;
+
+    let monthlyRevenue = 0;
+    let monthlyProfit = 0;
+    let itemsCount = 0;
+    
+    let itemQuantitiesMap = {};
+    let dailyPerformanceMap = {};
+
+    // Initialize map structure for every day of the month to discover low/high sales gaps
+    for (let i = 1; i <= totalDaysInMonth; i++) {
+        let dayStr = String(i).padStart(2, '0');
+        dailyPerformanceMap[`${targetMonth}-${dayStr}`] = { revenue: 0, profit: 0 };
+    }
+
+    let tableHtml = "";
+
+    cachedSalesData.forEach(row => {
+        let rawDate = row["Date"] || row["date"] || "";
+        if (!rawDate) return;
+        
+        let txDateStr = standardizeDate(rawDate);
+        if (!txDateStr.startsWith(targetMonth)) return; 
+
+        let val = parseFloat(row["Total Value (₹)"] || row["Total Value"] || row["total"] || row["Total"] || 0);
+        let prf = parseFloat(row["Profit (₹)"] || row["Profit"] || row["profit"] || 0);
+        let qty = parseInt(row["Quantity Sold"] || row["qty"] || 1);
+        let bNo = row["Bill No"] || row["Invoice ID"] || row["invoice"] || "N/A";
+        let medName = String(row["Medicine Name"] || row["medicine"] || "Unknown Medicine").trim();
+
+        monthlyRevenue += val;
+        monthlyProfit += prf;
+        itemsCount += qty;
+
+        if (dailyPerformanceMap[txDateStr]) {
+            dailyPerformanceMap[txDateStr].revenue += val;
+            dailyPerformanceMap[txDateStr].profit += prf;
+        }
+
+        if (medName) {
+            itemQuantitiesMap[medName] = (itemQuantitiesMap[medName] || 0) + qty;
+        }
+
+        tableHtml += `
+            <tr>
+                <td style="color:#38bdf8;">#${bNo}</td>
+                <td>${txDateStr}</td>
+                <td>${medName}</td>
+                <td>${qty}</td>
+                <td>₹${val.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</td>
+                <td style="color:#10b981;">₹${prf.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</td>
+            </tr>
+        `;
+    });
+
+    let marginPct = monthlyRevenue <= 0 ? "0.00" : ((monthlyProfit / monthlyRevenue) * 100).toFixed(2);
+    let avgRevenuePerDay = (monthlyRevenue / totalDaysInMonth).toFixed(2);
+    let avgProfitPerDay = (monthlyProfit / totalDaysInMonth).toFixed(2);
+
+    // Render Metrics
+    document.getElementById("lblRevenue").innerText = "₹" + monthlyRevenue.toLocaleString("en-IN", { minimumFractionDigits: 2 });
+    document.getElementById("lblProfit").innerText = "₹" + monthlyProfit.toLocaleString("en-IN", { minimumFractionDigits: 2 });
+    document.getElementById("lblMargin").innerText = marginPct + "%";
+    document.getElementById("lblAvgRevenue").innerText = "₹" + parseFloat(avgRevenuePerDay).toLocaleString("en-IN", { minimumFractionDigits: 2 });
+    document.getElementById("lblAvgProfit").innerText = "₹" + parseFloat(avgProfitPerDay).toLocaleString("en-IN", { minimumFractionDigits: 2 });
+    document.getElementById("lblItems").innerText = itemsCount.toLocaleString("en-IN");
+
+    // Top moving drugs list processing
+    let sortedItems = Object.keys(itemQuantitiesMap).map(name => {
+        return { name: name, qty: itemQuantitiesMap[name] };
+    }).sort((a, b) => b.qty - a.qty).slice(0, 6);
+
+    if (sortedItems.length === 0) {
+        document.getElementById("topItemsChecklist").innerHTML = `<li class="item-row" style="color:var(--txt-dim); font-style:italic;">No records this month.</li>`;
+        document.getElementById("checklistSubtext").innerText = "Zero sales records metrics.";
+        document.getElementById("transactionTableBody").innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--txt-dim); font-style:italic; padding:30px 0;">No ledger items recorded for this month partition.</td></tr>`;
+    } else {
+        let checklistHtml = "";
+        sortedItems.forEach(item => {
+            checklistHtml += `<li class="item-row"><span class="icon-check">✔</span> ${item.name} <span style="margin-left:auto; color:var(--txt-dim); font-size:13px;">(${item.qty} units)</span></li>`;
+        });
+        document.getElementById("topItemsChecklist").innerHTML = checklistHtml;
+        document.getElementById("checklistSubtext").innerText = "Top volume performance variants.";
+        document.getElementById("transactionTableBody").innerHTML = tableHtml;
+    }
+
+    // Chart Coordinates Extraction (Day-by-Day performance analysis)
+    let sortedDays = Object.keys(dailyPerformanceMap).sort();
+    let chartRevenueData = sortedDays.map(d => dailyPerformanceMap[d].revenue);
+    let chartProfitData = sortedDays.map(d => dailyPerformanceMap[d].profit);
+    let chartLabels = sortedDays.map(d => d.substring(8)); // just show the day numbers '01', '02', etc.
+
+    renderDualTimelineChart(chartLabels, chartRevenueData, chartProfitData);
+}
+
+function renderDualTimelineChart(labels, revValues, prfValues) {
+    const ctx = document.getElementById('monthlyTrendChart').getContext('2d');
+    
+    if (trendChartInstance) {
+        trendChartInstance.destroy();
+    }
+    
+    trendChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Revenue Stream (₹)',
+                    data: revValues,
+                    backgroundColor: 'rgba(56, 189, 248, 0.7)',
+                    borderColor: '#38bdf8',
+                    borderWidth: 1,
+                    borderRadius: 4
+                },
+                {
+                    label: 'Net Profits (₹)',
+                    data: prfValues,
+                    type: 'line',
+                    borderColor: '#a855f7',
+                    backgroundColor: 'transparent',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#a855f7',
+                    tension: 0.2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top', labels: { color: '#94a3b8', font: { weight: '600' } } }
+            },
+            scales: {
+                x: { 
+                    grid: { display: false }, 
+                    ticks: { color: '#f8fafc', font: { size: 11, weight: '600' } } 
+                },
+                y: { 
+                    beginAtZero: true, 
+                    grid: { color: 'rgba(255,255,255,0.05)' }, 
+                    ticks: { color: '#94a3b8' } 
+                }
+            }
+        }
+    });
+}
+</script>
+</body>
+</html>
