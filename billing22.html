@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SRI RAGHAVENDRA MEDICALS - BILLING PLATFORM</title>
+    
+    <style>
+        :root {
+            --surface-bg: #0f172a;
+            --panel-bg: #1e293b;
+            --border-glow: rgba(255, 255, 255, 0.05);
+            
+            /* High-vibrancy Infographic UI Accents */
+            --primary: #38bdf8;
+            --success: #34d399;
+            --danger: #f43f5e;
+            --warning: #fbbf24;
+            --grad-purple: linear-gradient(135deg, #a855f7, #6366f1);
+            --grad-teal: linear-gradient(135deg, #38bdf8, #0ea5e9);
+            --grad-amber: linear-gradient(135deg, #f59e0b, #d97706);
+            
+            --txt-bright: #f8fafc;
+            --txt-dim: #94a3b8;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background: var(--surface-bg); color: var(--txt-bright); padding-bottom: 80px; font-size: 14px; }
+        
+        header { background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); border-bottom: 1px solid var(--border-glow); color: #fff; padding: 18px; text-align: center; position: sticky; top: 0; z-index: 99; }
+        header h1 { font-size: 16px; font-weight: 800; letter-spacing: 0.5px; background: linear-gradient(to right, #38bdf8, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .nav-actions { position: absolute; right: 15px; top: 12px; }
+        .btn-vector { text-decoration: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; }
+        .btn-vector-primary { background: rgba(56, 189, 248, 0.1); color: var(--primary); border: 1px solid rgba(56, 189, 248, 0.2); }
+
+        .loading-status { background: rgba(56, 189, 248, 0.15); border-bottom: 1px solid rgba(56, 189, 248, 0.2); color: #38bdf8; text-align: center; padding: 10px; font-size: 13px; font-weight: bold; }
+        
+        .app-page { display: none; padding: 15px; max-width: 600px; margin: 0 auto; }
+        .app-page.active { display: block; }
+        
+        .card { background: var(--panel-bg); border-radius: 16px; padding: 20px; border: 1px solid var(--border-glow); box-shadow: 0 10px 30px rgba(0,0,0,0.25); margin-bottom: 15px; position: relative; overflow: hidden; }
+        .card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: var(--grad-teal); }
+        .card-secondary::before { background: var(--grad-purple); }
+        .card-amber::before { background: var(--grad-amber); }
+        
+        .card h2 { font-size: 13px; color: var(--primary); margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        .card-amber h2 { color: #f59e0b; }
+
+        .form-group { margin-bottom: 14px; position: relative; }
+        label { display: block; font-weight: 700; font-size: 11px; color: var(--txt-dim); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid rgba(255,255,255,0.08); background: #151f32; color: var(--txt-bright); border-radius: 8px; font-size: 14px; transition: border-color 0.2s; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); }
+        input[readonly] { background: rgba(255,255,255,0.03); color: var(--txt-dim); cursor: not-allowed; }
+        
+        .form-row { display: flex; gap: 12px; }
+        .form-row .form-group { flex: 1; }
+        
+        .suggestions { position: absolute; top: 100%; left: 0; right: 0; background: #151f32; border: 1px solid rgba(255,255,255,0.15); max-height: 180px; overflow-y: auto; z-index: 1000; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .suggestion-item { padding: 12px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--txt-bright); }
+        .suggestion-item:hover { background: rgba(56, 189, 248, 0.1); color: var(--primary); }
+
+        .btn { background: var(--grad-teal); color: white; border: none; padding: 14px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; width: 100%; text-align: center; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2); transition: opacity 0.2s; }
+        .btn:hover { opacity: 0.95; }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+        .btn-success { background: var(--grad-purple); box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2); }
+        .btn-amber { background: var(--grad-amber); box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2); }
+        .btn-secondary { background: rgba(255, 255, 255, 0.05); color: var(--txt-bright); border: 1px solid rgba(255,255,255,0.1); box-shadow: none; }
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); }
+        .btn-danger { background: var(--danger); padding: 6px 10px; font-size: 11px; border-radius: 6px; width: auto; box-shadow: none; border: none; color: white; cursor: pointer; }
+        
+        .ledger-item { border-left: 4px solid var(--primary); padding: 14px; background: rgba(255,255,255,0.02); margin-bottom: 12px; border-radius: 0 8px 8px 0; border-top: 1px solid var(--border-glow); border-right: 1px solid var(--border-glow); border-bottom: 1px solid var(--border-glow); }
+        
+        .preview-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+        .preview-table th { text-align: left; color: var(--txt-dim); padding: 6px 4px; border-bottom: 1px solid rgba(255,255,255,0.1); font-weight: 600; text-transform: uppercase; }
+        .preview-table td { padding: 6px 2px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--txt-bright); vertical-align: middle; position: relative; }
+        .preview-table td input { background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.1); color: var(--txt-bright); border-radius: 4px; }
+        .preview-table td input:focus { border-color: var(--warning); outline: none; }
+        .badge-unit { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; background: rgba(56, 189, 248, 0.15); color: var(--primary); }
+
+        .totals-box { padding: 16px; background: #151f32; border: 1px solid var(--border-glow); border-radius: 8px; display: flex; justify-content: space-between; font-size: 14px; font-weight: bold; margin-bottom: 8px; }
+        .profit-box { color: var(--success); background: rgba(52, 211, 153, 0.05); border: 1px solid rgba(52, 211, 153, 0.15); }
+        
+        .search-bar-box { display: flex; gap: 8px; margin-bottom: 15px; }
+        .search-bar-box input { flex: 2; }
+        .search-bar-box button { flex: 1; padding: 0 10px; }
+
+        .filter-panel { background: #151f32; padding: 14px; border: 1px solid var(--border-glow); border-radius: 8px; margin-bottom: 15px; }
+        .filter-flex-row { display: flex; gap: 10px; align-items: flex-end; }
+        
+        .receipt-body { background: #151f32; border: 1px dashed rgba(255,255,255,0.15); padding: 20px; border-radius: 8px; font-family: monospace; color: var(--txt-bright); }
+        
+        nav { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: #1e293b; border-top: 1px solid var(--border-glow); display: flex; z-index: 999; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--txt-dim); background: none; border: none; font-size: 11px; font-weight: bold; cursor: pointer; transition: color 0.2s; }
+        .nav-item.active { color: var(--primary); background: rgba(255,255,255,0.01); }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>SRI RAGHAVENDRA MEDICALS &amp; GENERAL STORE</h1>
+    <div class="nav-actions">
+        <a href="https://jagadishmayachar7-create.github.io/sri_raghavendra_medical/dashboard.html" class="btn-vector btn-vector-primary">Dashboard 📝</a>
+    </div>
+</header>
+<div id="loadingStatus" class="loading-status">🔄 Syncing System Parameters...</div>
+
+<div id="billingPage" class="app-page active">
+    
+    <div class="card card-amber">
+        <h2>⚡ Bulk Text Entry Pipeline</h2>
+        
+        <div class="form-group" style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin-bottom: 12px;">
+            <label style="color: var(--warning);">General Item Margin Modifier Option</label>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <input type="number" id="generalProfitPercent" value="10" min="0" max="100" style="width: 80px; padding: 6px;" oninput="syncGeneralMargins('bulk')">
+                <span style="font-size: 13px; color: var(--txt-dim);">% Flat Profit applied to all Unregistered / General Items</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Paste Raw Comma Separated Items</label>
+            <textarea id="bulkInputText" rows="2" placeholder="e.g., emegon-6-30,omee-D-1-5,aceclowocp-2-10"></textarea>
+        </div>
+        <button class="btn btn-amber" id="processBulkBtn" onclick="parseAndPreviewBulkData()" disabled>Analyze &amp; Verify Extract</button>
+        
+        <div id="bulkPreviewStage" style="display:none; margin-top:15px; background: rgba(15,23,42,0.4); border: 1px solid rgba(255,255,255,0.05); padding:12px; border-radius:8px;">
+            <h3 style="font-size:11px; color:var(--warning); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Extracted Pipeline Stage View (Before Basket Add)</h3>
+            <table class="preview-table">
+                <thead>
+                    <tr>
+                        <th>Item Description</th>
+                        <th>Unit Type</th>
+                        <th>Qty</th>
+                        <th>Value (₹)</th>
+                    </tr>
+                </thead>
+                <tbody id="bulkPreviewTableBody"></tbody>
+            </table>
+            <button class="btn btn-success" style="margin-top:12px; padding:10px; font-size:13px;" onclick="commitBulkPreviewToBasket()">Push Verified Items to Active Basket 📥</button>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>New Transaction Summary</h2>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Current Bill Number</label>
+                <input type="text" id="displayBillNo" readonly style="font-weight: bold; color: var(--danger);">
+            </div>
+            <div class="form-group">
+                <label>Transaction Date</label>
+                <input type="date" id="transactionDate">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Search Medicine</label>
+            <input type="text" id="medSearch" placeholder="Type name/ID to add..." autocomplete="off" disabled>
+            <div id="suggestions" class="suggestions" style="display: none;"></div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>Expiry</label>
+                <input type="text" id="medExpiry" readonly placeholder="N/A">
+            </div>
+            <div class="form-group">
+                <label>Pack Size</label>
+                <input type="text" id="medPack" readonly placeholder="N/A">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Unit Type</label>
+                <select id="medUnitType" onchange="handleUnitTypeChange()">
+                    <option value="Full Strip">Full Strip</option>
+                    <option value="Loose">Loose (Tablets)</option>
+                    <option value="General">General</option>
+                </select>
+            </div>
+            <div class="form-group" id="marginGroup" style="display: none;">
+                <label>Profit Margin</label>
+                <select id="medMargin" onchange="calculateBasePrice()">
+                    <option value="0.08">8%</option>
+                    <option value="0.10" selected>10%</option>
+                    <option value="0.12">12%</option>
+                    <option value="0.15">15%</option>
+                    <option value="0.18">18%</option>
+                    <option value="0.20">20%</option>
+                    <option value="0.25">25%</option>
+                </select>
+            </div>
+            <div class="form-group" id="summaryGeneralMarginGroup" style="display: none; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px;">
+                <label style="color: var(--warning);">General Margin Modifier</label>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    <input type="number" id="medGeneralProfitPercent" value="10" min="0" max="100" style="padding: 6px;" oninput="syncGeneralMargins('summary')">
+                    <span style="font-size: 11px; color: var(--txt-dim);">%</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Qty</label>
+                <input type="number" id="medQty" value="1" min="1" oninput="calculateBasePrice()">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Final Value Amount (₹)</label>
+            <input type="number" id="medMRP" placeholder="0.00" step="0.01">
+        </div>
+        
+        <button class="btn" id="addItemBtn" onclick="addItemToInvoice()" disabled>Add Line Item</button>
+    </div>
+
+    <div class="card card-secondary">
+        <h2>Active Basket</h2>
+        <div id="invoiceItemsContainer">
+            <p style="text-align: center; color: var(--txt-dim); font-style: italic; padding: 10px;">Basket empty.</p>
+        </div>
+        <div class="totals-box">
+            <span>Total Payable:</span>
+            <span id="grandTotalDisplay">₹0.00</span>
+        </div>
+        <div class="totals-box profit-box">
+            <span>Estimated Profit Margin:</span>
+            <span id="basketProfitDisplay">₹0.00</span>
+        </div>
+        <button class="btn btn-success" id="checkoutBtn" style="margin-top: 15px;" onclick="submitInvoiceData()" disabled>💾 Save &amp; Log Entire Bill</button>
+    </div>
+</div>
+
+<div id="historyPage" class="app-page">
+    <div class="card">
+        <h2>🔍 Search &amp; Review Bills</h2>
+        
+        <div class="filter-panel">
+            <div class="filter-flex-row">
+                <div style="flex: 2;">
+                    <label>Filter By Calendar Date</label>
+                    <input type="date" id="historyFilterDate" onchange="applyCombinedFilters()">
+                </div>
+                <div style="flex: 1;">
+                    <button class="btn btn-secondary" style="padding: 12px; font-size: 12px;" onclick="clearDateFilter()">Clear Date</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="search-bar-box">
+            <input type="text" id="searchBillInput" placeholder="Enter Bill Number..." oninput="applyCombinedFilters()">
+            <button class="btn" onclick="applyCombinedFilters()">Find Bill</button>
+        </div>
+        <button class="btn btn-secondary" onclick="loadSalesHistory()" style="margin-bottom: 12px; font-size:12px; padding:8px;">🔄 Pull All Rows</button>
+        <div id="historyLogContainer"></div>
+    </div>
+</div>
+
+<div id="receiptPage" class="app-page">
+    <div class="card">
+        <h2>📄 Sales Invoice Record View</h2>
+        <button class="btn btn-secondary" onclick="switchPage('history')" style="margin-bottom:15px; padding:10px; font-size:12px;">⬅️ Back to Search List</button>
+        <div class="receipt-body" id="receiptContent"></div>
+    </div>
+</div>
+
+<nav>
+    <button class="nav-item active" id="navBill" onclick="switchPage('billing')">
+        <div style="font-size: 16px; margin-bottom: 2px;">📝</div>
+        <div>New Bill</div>
+    </button>
+    <button class="nav-item" id="navHistory" onclick="switchPage('history')">
+        <div style="font-size: 16px; margin-bottom: 2px;">📊</div>
+        <div>View Sales Bill</div>
+    </button>
+    <button class="nav-item" onclick="window.location.href='https://jagadishmayachar7-create.github.io/sri_raghavendra_medical/dashboard.html'">
+        <div style="font-size: 16px; margin-bottom: 2px;">📊</div>
+        <div>Dashboard</div>
+    </button>
+</nav>
+    
+    
+    
+    
+    
+    
+<script>
+const CORE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycby4kVfgKD263CaFxlkP6t6soil7MNvhv6Mpd2DB0aWu5lhjYcIScXxrDSndDsvHaoO4gA/exec";
+
+let inventoryDatabase = [];
+let selectedMedicine = null;
+let currentInvoiceItems = [];
+let previewBulkStagingItems = [];
+let globalSalesRowsCache = [];
+let currentBillNumber = "";
+
+// GENERATES AND ASSIGNS THE UNIQUE BILL KEY
+function generateBillNumber() {
+    const prefix = "SRM";
+    const numericStamp = Math.floor(10000 + Math.random() * 90000);
+    currentBillNumber = `${prefix}-${numericStamp}`;
+    document.getElementById('displayBillNo').value = currentBillNumber;
+}
+
+function initializeDefaultDatePicker() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    document.getElementById('transactionDate').value = `${year}-${month}-${day}`;
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    generateBillNumber();
+    initializeDefaultDatePicker();
+    fetch(CORE_WEB_APP_URL)
+        .then(res => res.json())
+        .then(data => {
+            if (Array.isArray(data)) {
+                inventoryDatabase = data;
+                document.getElementById('loadingStatus').style.display = 'none';
+                document.getElementById('medSearch').disabled = false;
+                document.getElementById('addItemBtn').disabled = false;
+                document.getElementById('checkoutBtn').disabled = true;
+                document.getElementById('processBulkBtn').disabled = false;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            document.getElementById('loadingStatus').innerHTML = "⚠️ Cloud Pipeline offline.";
+        });
+    
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.preview-table-search-cell')) {
+            document.querySelectorAll('.table-suggestions').forEach(el => el.style.display = 'none');
+        }
+    });
+});
+
+function switchPage(pageName) {
+    document.querySelectorAll('.app-page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    
+    if(pageName === 'billing') {
+        document.getElementById('billingPage').classList.add('active');
+        document.getElementById('navBill').classList.add('active');
+    } else if (pageName === 'history') {
+        document.getElementById('historyPage').classList.add('active');
+        document.getElementById('navHistory').classList.add('active');
+        loadSalesHistory();
+    } else if (pageName === 'receipt') {
+        document.getElementById('receiptPage').classList.add('active');
+    }
+}
+
+function syncGeneralMargins(source) {
+    let targetValue = 10;
+    if (source === 'bulk') {
+        targetValue = parseFloat(document.getElementById('generalProfitPercent').value) || 0;
+        document.getElementById('medGeneralProfitPercent').value = targetValue;
+    } else {
+        targetValue = parseFloat(document.getElementById('medGeneralProfitPercent').value) || 0;
+        document.getElementById('generalProfitPercent').value = targetValue;
+    }
+    reapplyStagingMarginConfigs();
+}
+
+function handleUnitTypeChange() {
+    const unitType = document.getElementById('medUnitType').value;
+    const generalMarginGroup = document.getElementById('summaryGeneralMarginGroup');
+    const normalMarginGroup = document.getElementById('marginGroup');
+    
+    if (unitType === "General") {
+        generalMarginGroup.style.display = "block";
+        normalMarginGroup.style.display = "none";
+    } else {
+        generalMarginGroup.style.display = "none";
+        normalMarginGroup.style.display = "block";
+    }
+    calculateBasePrice();
+}
+
+function parseAndPreviewBulkData() {
+    const rawInput = document.getElementById('bulkInputText').value.trim();
+    if (!rawInput) { alert("Please supply text string values before parsing!"); return; }
+    
+    let generalProfitPercent = parseFloat(document.getElementById('generalProfitPercent').value);
+    if (isNaN(generalProfitPercent)) generalProfitPercent = 10;
+    let marginCostMultiplier = (100 - generalProfitPercent) / 100;
+
+    const separateItems = rawInput.split(',');
+    previewBulkStagingItems = [];
+    let tableRowsMarkup = '';
+    
+    separateItems.forEach((chunk, index) => {
+        let trimmedChunk = chunk.trim();
+        if (!trimmedChunk) return;
+        
+        let segments = trimmedChunk.split('-');
+        if(segments.length < 3) return;
+        
+        let enteredPrice = parseFloat(segments.pop()) || 0;
+        let enteredQty = parseFloat(segments.pop()) || 0;
+        let originalNameTerm = segments.join('-').trim();
+        
+        let exactMatch = inventoryDatabase.find(dbItem => 
+            dbItem["Medicine Name"] && dbItem["Medicine Name"].toLowerCase().replace(/\s+/g, '') === originalNameTerm.toLowerCase().replace(/\s+/g, '')
+        );
+        
+        if (!exactMatch) {
+            exactMatch = inventoryDatabase.find(dbItem => 
+                dbItem["Medicine Name"] && dbItem["Medicine Name"].toLowerCase().includes(originalNameTerm.toLowerCase())
+            );
+        }
+        
+        let verifiedName = exactMatch ? exactMatch["Medicine Name"] : originalNameTerm;
+        let calculatedUnitType = "Full Strip"; 
+        let isGeneralUnregistered = false;
+
+        if(!exactMatch) {
+            isGeneralUnregistered = true;
+            calculatedUnitType = "General Item";
+        } else if (exactMatch["Unit Type"]) {
+            calculatedUnitType = exactMatch["Unit Type"];
+        }
+
+        let costPrice = 0;
+        if (isGeneralUnregistered || calculatedUnitType === "General Item") {
+            let singleUnitSoldPrice = enteredPrice / enteredQty;
+            costPrice = singleUnitSoldPrice * marginCostMultiplier;
+        } else {
+            costPrice = exactMatch ? parseFloat(exactMatch["Cost Price"] || exactMatch["Purchase Price"] || 0) : (enteredPrice / enteredQty) * 0.9;
+        }
+
+        let packSizeText = exactMatch ? (exactMatch["Pack Size"] || "10").toString() : "10";
+        let numericPackSize = parseInt(packSizeText.replace(/[^0-9]/g, ''), 10) || 10;
+        
+        let totalEstimatedCost = 0;
+        if (calculatedUnitType === "Loose") {
+            let singleUnitCost = costPrice / numericPackSize;
+            totalEstimatedCost = singleUnitCost * enteredQty;
+        } else {
+            totalEstimatedCost = costPrice * enteredQty;
+        }
+        let finalCalculatedProfit = enteredPrice - totalEstimatedCost;
+        
+        previewBulkStagingItems.push({
+            name: verifiedName,
+            unitType: calculatedUnitType,
+            qty: enteredQty,
+            total: enteredPrice,
+            profit: parseFloat(finalCalculatedProfit.toFixed(2)),
+            costPrice: costPrice,
+            numericPackSize: numericPackSize,
+            isGeneral: isGeneralUnregistered
+        });
+        
+        tableRowsMarkup += `
+            <tr data-index="${index}">
+                <td class="preview-table-search-cell">
+                    <input type="text" id="inlineSearch-${index}" value="${verifiedName}" style="padding: 6px; font-size: 12px; width: 100%;" oninput="handleInlineTableSearch(${index}, this.value)" autocomplete="off">
+                    <div id="inlineSuggestions-${index}" class="suggestions table-suggestions" style="display: none; width: 100%;"></div>
+                    <span id="unregisteredBadge-${index}" style="color:var(--danger); font-size:10px; display: ${isGeneralUnregistered ? 'inline' : 'none'};">(Unregistered)</span>
+                </td>
+                <td>
+                    <select id="inlineUnitType-${index}" style="padding: 4px; font-size: 11px; background: #151f32;" onchange="updateBulkStagingValue(${index}, 'unitType', this.value)">
+                        <option value="Full Strip" ${calculatedUnitType === "Full Strip" ? "selected" : ""}>Full Strip</option>
+                        <option value="Loose" ${calculatedUnitType === "Loose" || calculatedUnitType === "Loose (Tablets)" ? "selected" : ""}>Loose</option>
+                        <option value="Box" ${calculatedUnitType === "Box" ? "selected" : ""}>Box</option>
+                        <option value="General Item" ${calculatedUnitType === "General Item" ? "selected" : ""}>General Item</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="number" value="${enteredQty}" min="0" step="any" style="padding: 6px; font-size: 12px; width: 55px;" oninput="updateBulkStagingValue(${index}, 'qty', this.value)">
+                </td>
+                <td>
+                    <input type="number" value="${enteredPrice.toFixed(2)}" step="0.01" style="padding: 6px; font-size: 12px; width: 75px;" oninput="updateBulkStagingValue(${index}, 'total', this.value)">
+                </td>
+            </tr>
+        `;
+    });
+    
+    if(previewBulkStagingItems.length === 0) {
+        alert("Unable to decode string criteria formatting. Ensure structure mirrors: name-qty-price");
+        return;
+    }
+    
+    document.getElementById('bulkPreviewTableBody').innerHTML = tableRowsMarkup;
+    document.getElementById('bulkPreviewStage').style.display = 'block';
+}
+
+function handleInlineTableSearch(index, queryValue) {
+    const query = queryValue.toLowerCase().trim();
+    const suggestionsPanel = document.getElementById(`inlineSuggestions-${index}`);
+    suggestionsPanel.innerHTML = '';
+    
+    previewBulkStagingItems[index].name = queryValue;
+
+    if (!query) { suggestionsPanel.style.display = 'none'; return; }
+
+    const matches = inventoryDatabase.filter(item => 
+        (item["Medicine Name"] && item["Medicine Name"].toLowerCase().includes(query)) ||
+        (item["ID"] && item["ID"].toString().toLowerCase().includes(query))
+    ).slice(0, 5);
+
+    if (matches.length > 0) {
+        matches.forEach(productItem => {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'suggestion-item';
+            rowDiv.innerText = `${productItem["Medicine Name"]} (MRP: ₹${productItem["MRP"] || '0'})`;
+            rowDiv.addEventListener('click', () => selectInlineTableProduct(index, productItem));
+            suggestionsPanel.appendChild(rowDiv);
+        });
+        suggestionsPanel.style.display = 'block';
+    } else {
+        suggestionsPanel.style.display = 'none';
+    }
+}
+
+function selectInlineTableProduct(index, selectedProduct) {
+    let item = previewBulkStagingItems[index];
+    if (!item) return;
+
+    document.getElementById(`inlineSearch-${index}`).value = selectedProduct["Medicine Name"];
+    document.getElementById(`inlineSuggestions-${index}`).style.display = 'none';
+    document.getElementById(`unregisteredBadge-${index}`).style.display = 'none';
+
+    item.name = selectedProduct["Medicine Name"];
+    item.isGeneral = false;
+
+    if (selectedProduct["Unit Type"]) {
+        item.unitType = selectedProduct["Unit Type"];
+        document.getElementById(`inlineUnitType-${index}`).value = selectedProduct["Unit Type"];
+    }
+
+    let costPrice = parseFloat(selectedProduct["Cost Price"] || selectedProduct["Purchase Price"] || 0);
+    let packSizeText = (selectedProduct["Pack Size"] || "10").toString();
+    item.numericPackSize = parseInt(packSizeText.replace(/[^0-9]/g, ''), 10) || 10;
+    item.costPrice = costPrice;
+
+    updateBulkStagingValue(index, 'total', item.total);
+}
+
+function updateBulkStagingValue(index, field, value) {
+    let item = previewBulkStagingItems[index];
+    if (!item) return;
+
+    if (field === 'name') item.name = value;
+    else if (field === 'unitType') {
+        item.unitType = value;
+        item.isGeneral = (value === "General Item");
+        document.getElementById(`unregisteredBadge-${index}`).style.display = item.isGeneral ? 'inline' : 'none';
+    }
+    else if (field === 'qty') item.qty = parseFloat(value) || 0;
+    else if (field === 'total') item.total = parseFloat(value) || 0;
+
+    if(item.isGeneral || item.unitType === "General Item") {
+        let generalProfitPercent = parseFloat(document.getElementById('generalProfitPercent').value);
+        if (isNaN(generalProfitPercent)) generalProfitPercent = 10;
+        let marginCostMultiplier = (100 - generalProfitPercent) / 100;
+        let singleUnitSoldPrice = item.total / (item.qty || 1);
+        item.costPrice = singleUnitSoldPrice * marginCostMultiplier;
+    }
+
+    let currentCostBase = item.costPrice;
+    let totalEstimatedCost = 0;
+    if (item.unitType === "Loose") {
+        let singleUnitCost = currentCostBase / item.numericPackSize;
+        totalEstimatedCost = singleUnitCost * item.qty;
+    } else {
+        totalEstimatedCost = currentCostBase * item.qty;
+    }
+    item.profit = parseFloat((item.total - totalEstimatedCost).toFixed(2));
+}
+
+function reapplyStagingMarginConfigs() {
+    if(previewBulkStagingItems.length === 0) return;
+    previewBulkStagingItems.forEach((item, index) => {
+        if(item.isGeneral || item.unitType === "General Item") {
+            updateBulkStagingValue(index, 'total', item.total);
+        }
+    });
+}
+
+function commitBulkPreviewToBasket() {
+    if(previewBulkStagingItems.length === 0) return;
+    previewBulkStagingItems.forEach(item => { currentInvoiceItems.push(item); });
+    renderInvoiceContainer();
+    document.getElementById('bulkInputText').value = '';
+    document.getElementById('bulkPreviewTableBody').innerHTML = '';
+    document.getElementById('bulkPreviewStage').style.display = 'none';
+    previewBulkStagingItems = [];
+}
+
+const searchInput = document.getElementById('medSearch');
+const suggestionsBox = document.getElementById('suggestions');
+
+searchInput.addEventListener('input', () => {
+    const query = searchInput.value.toLowerCase().trim();
+    suggestionsBox.innerHTML = '';
+    if (!query) { suggestionsBox.style.display = 'none'; return; }
+
+    const filtered = inventoryDatabase.filter(item => 
+        (item["Medicine Name"] && item["Medicine Name"].toLowerCase().includes(query)) ||
+        (item["ID"] && item["ID"].toString().toLowerCase().includes(query))
+    ).slice(0, 5);
+
+    if (filtered.length > 0) {
+        filtered.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'suggestion-item';
+            div.innerText = `${item["Medicine Name"]} (MRP: ₹${item["MRP"] || '0'})`;
+            div.onclick = () => selectMainProduct(item);
+            suggestionsBox.appendChild(div);
+        });
+        suggestionsBox.style.display = 'block';
+    } else {
+        suggestionsBox.style.display = 'none';
+    }
+});
+
+function selectMainProduct(item) {
+    selectedMedicine = item;
+    searchInput.value = item["Medicine Name"];
+    suggestionsBox.style.display = 'none';
+    
+    document.getElementById('medExpiry').value = item["Expiry Date"] || "N/A";
+    document.getElementById('medPack').value = item["Pack Size"] || "10";
+    
+    if (item["Unit Type"]) {
+        document.getElementById('medUnitType').value = item["Unit Type"];
+    }
+    handleUnitTypeChange();
+}
+
+function calculateBasePrice() {
+    if (!selectedMedicine) return;
+    const unitType = document.getElementById('medUnitType').value;
+    const qty = parseFloat(document.getElementById('medQty').value) || 1;
+    
+    let baseMrp = parseFloat(selectedMedicine["MRP"] || 0);
+    let packSizeText = (selectedMedicine["Pack Size"] || "10").toString();
+    let numericPackSize = parseInt(packSizeText.replace(/[^0-9]/g, ''), 10) || 10;
+    
+    let computedTotal = 0;
+    if (unitType === "Loose") {
+        let pricePerTab = baseMrp / numericPackSize;
+        computedTotal = pricePerTab * qty;
+    } else {
+        computedTotal = baseMrp * qty;
+    }
+    document.getElementById('medMRP').value = computedTotal.toFixed(2);
+}
+
+function addItemToInvoice() {
+    const unitType = document.getElementById('medUnitType').value;
+    const qty = parseFloat(document.getElementById('medQty').value) || 0;
+    const finalValue = parseFloat(document.getElementById('medMRP').value) || 0;
+    const medName = searchInput.value.trim();
+
+    if (!medName || qty <= 0 || finalValue <= 0) {
+        alert("Please enter a valid item name, quantity, and final value amount.");
+        return;
+    }
+
+    let costPrice = 0;
+    let isGeneral = (unitType === "General");
+    
+    if (isGeneral) {
+        let generalProfitPercent = parseFloat(document.getElementById('medGeneralProfitPercent').value) || 10;
+        costPrice = (finalValue / qty) * ((100 - generalProfitPercent) / 100);
+    } else if (selectedMedicine) {
+        costPrice = parseFloat(selectedMedicine["Cost Price"] || selectedMedicine["Purchase Price"] || 0);
+    } else {
+        costPrice = (finalValue / qty) * 0.9;
+    }
+
+    let packSizeText = selectedMedicine ? (selectedMedicine["Pack Size"] || "10").toString() : "10";
+    let numericPackSize = parseInt(packSizeText.replace(/[^0-9]/g, ''), 10) || 10;
+    
+    let totalEstimatedCost = (unitType === "Loose") ? (costPrice / numericPackSize) * qty : costPrice * qty;
+    let profit = parseFloat((finalValue - totalEstimatedCost).toFixed(2));
+
+    currentInvoiceItems.push({
+        name: medName,
+        unitType: unitType,
+        qty: qty,
+        total: finalValue,
+        profit: profit,
+        costPrice: costPrice,
+        numericPackSize: numericPackSize,
+        isGeneral: isGeneral
+    });
+
+    searchInput.value = '';
+    document.getElementById('medQty').value = '1';
+    document.getElementById('medMRP').value = '';
+    document.getElementById('medExpiry').value = '';
+    document.getElementById('medPack').value = '';
+    selectedMedicine = null;
+
+    renderInvoiceContainer();
+}
+
+// RENDERS ACTIVE BASKET & INDIVIDUAL LINE ITEM PROFIT VISUAL ACCENTS
+function renderInvoiceContainer() {
+    const container = document.getElementById('invoiceItemsContainer');
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    
+    if (currentInvoiceItems.length === 0) {
+        container.innerHTML = `<p style="text-align: center; color: var(--txt-dim); font-style: italic; padding: 10px;">Basket empty.</p>`;
+        document.getElementById('grandTotalDisplay').innerText = '₹0.00';
+        document.getElementById('basketProfitDisplay').innerText = '₹0.00';
+        checkoutBtn.disabled = true;
+        return;
+    }
+
+    checkoutBtn.disabled = false;
+    
+    let html = '';
+    let grandTotal = 0;
+    let totalProfit = 0;
+
+    currentInvoiceItems.forEach((item, index) => {
+        grandTotal += item.total;
+        totalProfit += item.profit;
+        html += `
+            <div class="ledger-item">
+                <div style="display:flex; justify-content:space-between; font-weight:bold;">
+                    <span>${item.name} <span class="badge-unit">${item.unitType}</span></span>
+                    <button class="btn-danger" onclick="removeItemFromBasket(${index})">✕ Remove</button>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-top:6px; color:var(--txt-dim); font-size:12px;">
+                    <span>Qty: ${item.qty} | Total: ₹${item.total.toFixed(2)}</span>
+                    <span style="color: var(--success); font-weight: 600;">Profit: ₹${item.profit.toFixed(2)}</span>
+                </div>
+            </div>`;
+    });
+
+    container.innerHTML = html;
+    document.getElementById('grandTotalDisplay').innerText = `₹${grandTotal.toFixed(2)}`;
+    document.getElementById('basketProfitDisplay').innerText = `₹${totalProfit.toFixed(2)}`;
+}
+
+function removeItemFromBasket(index) {
+    currentInvoiceItems.splice(index, 1);
+    renderInvoiceContainer();
+}
+
+// INJECTS BILL NO DIRECTLY TO TRANSFERRED PACKETS BEFORE SAVING BACKEND STRINGS
+function submitInvoiceData() {
+    if (currentInvoiceItems.length === 0) return;
+
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    const statusBox = document.getElementById('loadingStatus');
+    
+    checkoutBtn.disabled = true;
+    checkoutBtn.innerText = "⏳ Saving Transaction...";
+    statusBox.style.display = 'block';
+    statusBox.innerHTML = "📤 Uploading invoice to master ledger...";
+
+    const payload = {
+        billNumber: currentBillNumber, // Directly pushed here to make sure your master sheet saves it
+        date: document.getElementById('transactionDate').value,
+        items: currentInvoiceItems,
+        totalAmount: currentInvoiceItems.reduce((sum, item) => sum + item.total, 0),
+        totalProfit: currentInvoiceItems.reduce((sum, item) => sum + item.profit, 0)
+    };
+
+    fetch(CORE_WEB_APP_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    })
+    .then(() => {
+        alert(`Success! Bill ${currentBillNumber} logged safely.`);
+        
+        currentInvoiceItems = [];
+        renderInvoiceContainer();
+        generateBillNumber(); // Generates a fresh new Bill Number for your next customer entry automatically
+        
+        checkoutBtn.innerText = "💾 Save & Log Entire Bill";
+        statusBox.style.display = 'none';
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Critical failure committing data back to cloud server.");
+        checkoutBtn.disabled = false;
+        checkoutBtn.innerText = "💾 Save & Log Entire Bill";
+        statusBox.innerHTML = "⚠️ Pipeline Error.";
+    });
+}
+
+function loadSalesHistory() {
+    const container = document.getElementById('historyLogContainer');
+    container.innerHTML = `<p style="color:var(--txt-dim); text-align:center; padding:10px;">Pulling logging stream indices...</p>`;
+    
+    fetch(`${CORE_WEB_APP_URL}?action=history`)
+        .then(res => res.json())
+        .then(data => {
+            globalSalesRowsCache = Array.isArray(data) ? data : [];
+            applyCombinedFilters();
+        })
+        .catch(err => {
+            container.innerHTML = `<p style="color:var(--danger);">Error connection mapping historical data rows.</p>`;
+        });
+}
+
+function applyCombinedFilters() {
+    const filterDate = document.getElementById('historyFilterDate').value;
+    const searchNo = document.getElementById('searchBillInput').value.toLowerCase().trim();
+    const container = document.getElementById('historyLogContainer');
+    
+    let filtered = globalSalesRowsCache;
+    
+    if (filterDate) {
+        filtered = filtered.filter(row => row.date && row.date.startsWith(filterDate));
+    }
+    if (searchNo) {
+        filtered = filtered.filter(row => row.billNumber && row.billNumber.toLowerCase().includes(searchNo));
+    }
+    
+    if (filtered.length === 0) {
+        container.innerHTML = `<p style="color:var(--txt-dim); text-align:center; padding:10px;">No transaction indexes matched parameters.</p>`;
+        return;
+    }
+    
+    let html = '';
+    filtered.forEach(bill => {
+        html += `
+            <div class="history-row">
+                <div class="history-meta">
+                    <h4>${bill.billNumber || 'UNKNOWN'}</h4>
+                    <p>Date: ${bill.date ? bill.date.split('T')[0] : 'N/A'}</p>
+                    <p style="color:var(--txt-dim)">Items count: ${Array.isArray(bill.items) ? bill.items.length : 0}</p>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-weight:bold; color:var(--success); margin-bottom:4px;">₹${parseFloat(bill.totalAmount || 0).toFixed(2)}</div>
+                    <button class="btn" style="padding:4px 8px; font-size:11px; width:auto;" onclick="viewReceiptDetails('${bill.billNumber}')">View 📄</button>
+                </div>
+            </div>`;
+    });
+    container.innerHTML = html;
+}
+
+function clearDateFilter() {
+    document.getElementById('historyFilterDate').value = '';
+    applyCombinedFilters();
+}
+
+function viewReceiptDetails(billNumber) {
+    const bill = globalSalesRowsCache.find(b => b.billNumber === billNumber);
+    if (!bill) return;
+    
+    switchPage('receipt');
+    const container = document.getElementById('receiptContent');
+    
+    let itemsHtml = '';
+    if (Array.isArray(bill.items)) {
+        bill.items.forEach(item => {
+            itemsHtml += `
+                <div class="receipt-line">
+                    <span>${item.name} (x${item.qty})</span>
+                    <span>₹${parseFloat(item.total || 0).toFixed(2)}</span>
+                </div>`;
+        });
+    }
+    
+    container.innerHTML = `
+        <div class="receipt-header">
+            <h3>SRI RAGHAVENDRA MEDICALS</h3>
+            <p>Bill Ref: ${bill.billNumber}</p>
+            <p>Date Logged: ${bill.date ? bill.date.replace('T', ' ').slice(0, 16) : 'N/A'}</p>
+        </div>
+        <div style="margin-bottom:15px;">
+            ${itemsHtml}
+        </div>
+        <div style="border-top:1px dashed rgba(255,255,255,0.15); padding-top:10px;" class="receipt-line">
+            <strong>GRAND TOTAL:</strong>
+            <strong>₹${parseFloat(bill.totalAmount || 0).toFixed(2)}</strong>
+        </div>
+        <div class="receipt-line" style="color:var(--success); font-size:11px;">
+            <span>Margin Yield:</span>
+            <span>₹${parseFloat(bill.totalProfit || 0).toFixed(2)}</span>
+        </div>
+    `;
+}
+</script>
+</body>
+</html>
