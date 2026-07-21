@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Finance Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-gold: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --sidebar-width: 260px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Header Bar */
+        .top-navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 55px;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            z-index: 1000;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .menu-toggle-btn {
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 1.4rem;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 6px;
+        }
+
+        .brand-logo {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-left: 10px;
+            color: var(--accent-blue);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-header-action {
+            background-color: rgba(59, 130, 246, 0.15);
+            color: var(--accent-blue);
+            border: 1px solid var(--accent-blue);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-header-action:hover {
+            background-color: var(--accent-blue);
+            color: #fff;
+        }
+
+        .btn-header-fd {
+            background-color: rgba(245, 158, 11, 0.15);
+            color: var(--accent-gold);
+            border-color: var(--accent-gold);
+        }
+
+        .btn-header-stock {
+            background-color: rgba(139, 92, 246, 0.15);
+            color: var(--accent-purple);
+            border-color: var(--accent-purple);
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding-top: 15px;
+            position: fixed;
+            top: 55px;
+            bottom: 0;
+            left: 0;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 999;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        .nav-list {
+            list-style: none;
+        }
+
+        .nav-item {
+            padding: 10px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--text-main);
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .sub-item { padding-left: 36px; font-size: 0.82rem; }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 55px;
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.expanded { margin-left: 0; }
+
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+
+        /* Grid & Cards */
+        .grid-5 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .card-value { font-size: 1.3rem; font-weight: bold; }
+        .income-val { color: var(--accent-green); }
+        .expense-val { color: var(--accent-red); }
+        .stocks-val { color: var(--accent-gold); }
+
+        /* Form Row Layout */
+        .inline-form-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .inline-group {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .inline-group label {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .form-control {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 6px 8px;
+            border-radius: 5px;
+            font-size: 0.82rem;
+            outline: none;
+            height: 34px;
+            width: 100%;
+        }
+
+        .btn-inline-submit {
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 0 16px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.82rem;
+            cursor: pointer;
+            height: 34px;
+        }
+
+        .btn-submit-fd { background-color: var(--accent-gold); color: #000; }
+        .btn-submit-stock { background-color: var(--accent-purple); color: #fff; }
+
+        /* Tables */
+        .table-container {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        .table-title {
+            padding: 12px 15px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 10px 14px; border-bottom: 1px solid var(--border-color); font-size: 0.82rem; }
+        th { background-color: rgba(0, 0, 0, 0.2); color: var(--text-muted); }
+
+        .badge { padding: 3px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
+        .badge-income { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
+        .badge-expense { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+
+        .sync-status {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-left: 10px;
+        }
+        .sync-success { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
+        .sync-pending { background: rgba(245, 158, 11, 0.2); color: var(--accent-gold); }
+
+        @media (max-width: 767px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active-mobile { transform: translateX(0); }
+            .main-content { margin-left: 0 !important; padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="top-navbar">
+        <div class="header-left">
+            <button class="menu-toggle-btn" onclick="toggleSidebar()">☰</button>
+            <div class="brand-logo">📱 Finance Tracker</div>
+            <span id="syncStatus" class="sync-status sync-pending">Syncing...</span>
+        </div>
+        
+        <div class="header-actions">
+            <button class="btn-header-action" onclick="switchTab('transactions')">➕ Entry</button>
+            <button class="btn-header-action btn-header-fd" onclick="switchTab('fd')">🏦 FD</button>
+            <button class="btn-header-action btn-header-stock" onclick="switchTab('stocks')">📈 Stock</button>
+        </div>
+    </header>
+
+    <nav class="sidebar" id="sidebar">
+        <ul class="nav-list">
+            <li class="nav-item active" id="nav-dashboard" onclick="switchTab('dashboard')">📊 Dashboard</li>
+            <li class="nav-item" id="nav-transactions" onclick="switchTab('transactions')">💳 Transactions</li>
+            <li class="nav-item sub-item" id="nav-fd" onclick="switchTab('fd')">↳ Fixed Deposits</li>
+            <li class="nav-item sub-item" id="nav-stocks" onclick="switchTab('stocks')">↳ Stocks</li>
+        </ul>
+    </nav>
+
+    <main class="main-content" id="mainContent">
+
+        <!-- DASHBOARD SECTION -->
+        <section id="dashboard" class="view-section active">
+            <h1 style="margin-bottom:15px; font-size:1.3rem;">Overview Dashboard</h1>
+            <div class="grid-5">
+                <div class="card">
+                    <div class="card-title">Total Balance</div>
+                    <div class="card-value" id="dashTotalBalance">₹0.00</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Total Income</div>
+                    <div class="card-value income-val" id="dashMonthlyIncome">+₹0.00</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Total Expense</div>
+                    <div class="card-value expense-val" id="dashMonthlyExpense">-₹0.00</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Total FD Principal</div>
+                    <div class="card-value stocks-val" id="dashFdValue">₹0.00</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Total Stocks Invested</div>
+                    <div class="card-value stocks-val" id="dashStockValue">₹0.00</div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div class="table-title">Recent Activity</div>
+                <table>
+                    <thead>
+                        <tr><th>Date</th><th>Category</th><th>Type</th><th>Account</th><th>Amount</th></tr>
+                    </thead>
+                    <tbody id="recentActivityBody">
+                        <tr><td colspan="5" style="text-align:center;">No activity recorded</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- TRANSACTIONS SECTION -->
+        <section id="transactions" class="view-section">
+            <h1 style="margin-bottom:15px; font-size:1.3rem;">Transactions Registry</h1>
+            
+            <div class="card">
+                <h3>➕ Add New Transaction</h3>
+                <form onsubmit="addTransaction(event)">
+                    <div class="inline-form-row">
+                        <div class="inline-group">
+                            <label>Date</label>
+                            <input type="date" id="txnDate" class="form-control" required>
+                        </div>
+                        <div class="inline-group">
+                            <label>Type</label>
+                            <select id="txnType" class="form-control">
+                                <option value="Income">Income</option>
+                                <option value="Expense">Expense</option>
+                            </select>
+                        </div>
+                        <div class="inline-group">
+                            <label>Category</label>
+                            <input type="text" id="txnCategory" class="form-control" placeholder="Salary / Rent" required>
+                        </div>
+                        <div class="inline-group">
+                            <label>Amount (₹)</label>
+                            <input type="number" step="0.01" id="txnAmount" class="form-control" placeholder="0.00" required>
+                        </div>
+                        <div class="inline-group">
+                            <label>Account</label>
+                            <input type="text" id="txnAccount" class="form-control" placeholder="HDFC / Cash" required>
+                        </div>
+                        <div class="inline-group">
+                            <label>Mode</label>
+                            <select id="txnMode" class="form-control">
+                                <option value="UPI">UPI</option>
+                                <option value="NetBanking">NetBanking</option>
+                                <option value="Cash">Cash</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-inline-submit">💾 Save Entry</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="table-container">
+                <div class="table-title">All Transactions</div>
+                <table>
+                    <thead>
+                        <tr><th>ID</th><th>Date</th><th>Type</th><th>Category</th><th>Account</th><th>Amount (₹)</th></tr>
+                    </thead>
+                    <tbody id="fullTransactionTableBody">
+                        <tr><td colspan="6" style="text-align:center;">No transactions found</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- FD SECTION -->
+        <section id="fd" class="view-section">
+            <h1 style="margin-bottom:15px; font-size:1.3rem;">Fixed Deposits</h1>
+            <div class="card">
+                <h3>🏦 Add Fixed Deposit</h3>
+                <form onsubmit="addFD(event)">
+                    <div class="inline-form-row">
+                        <div class="inline-group">
+                            <label>Bank Name</label>
+                            <input type="text" id="fdBank" class="form-control" placeholder="HDFC Bank" required>
+                        </div>
+                        <div class="inline-group">
+                            <label>Principal Amount (₹)</label>
+                            <input type="number" step="0.01" id="fdAmount" class="form-control" placeholder="100000" required>
+                        </div>
+                        <div class="inline-group">
+                            <label>Interest Rate (%)</label>
+                            <input type="number" step="0.01" id="fdRate" class="form-control" placeholder="7.1" required>
+                        </div>
+                        <div class="inline-group">
+                            <label>Maturity Date</label>
+                            <input type="date" id="fdMaturity" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn-inline-submit btn-submit-fd">💾 Add FD</button>
+                    </div>
+                </form>
+            </div>
+            <div class="table-container">
+                <div class="table-title">Active Fixed Deposits</div>
+                <table>
+                    <thead>
+                        <tr><th>Ref</th><th>Bank</th><th>Principal (₹)</th><th>Rate (%)</th><th>Maturity</th></tr>
+                    </thead>
+                    <tbody id="fdTableBody">
+                        <tr><td colspan="5" style="text-align:center;">No FDs tracked</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- STOCKS SECTION -->
+        <section id="stocks" class="view-section">
+            <h1 style="margin-bottom:15px; font-size:1.3rem;">Stocks Holdings</h1>
+            <div class="card">
+                <h3>📈 Add Stock Entry</h3>
+                <form onsubmit="addStock(event)">
+                    <div class="inline-form-row">
+                        <div class="inline-group">
+                            <label>Stock Symbol</label>
+                            <input type="text" id="stockName" class="form-control" placeholder="RELIANCE" required>
+                        </div>
+                        <div class="inline-group">
+                            <label>Shares Qty</label>
+                            <input type="number" id="stockQty" class="form-control" placeholder="10" required>
+                        </div>
+                        <div class="inline-group">
+                            <label>Avg Price (₹)</label>
+                            <input type="number" step="0.01" id="stockPrice" class="form-control" placeholder="2500" required>
+                        </div>
+                        <button type="submit" class="btn-inline-submit btn-submit-stock">💾 Add Stock</button>
+                    </div>
+                </form>
+            </div>
+            <div class="table-container">
+                <div class="table-title">Stocks Holdings</div>
+                <table>
+                    <thead>
+                        <tr><th>Symbol</th><th>Shares</th><th>Avg Price (₹)</th><th>Total Value (₹)</th></tr>
+                    </thead>
+                    <tbody id="stocksTableBody">
+                        <tr><td colspan="4" style="text-align:center;">No stocks recorded</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbwMnH9P5v_lclnpuvHE8YvB_aANppG98QxYLnT2nnJTeYvAABXKaOQsBxJfJtNTSQ26/exec";
+
+        let store = {
+            transactions: JSON.parse(localStorage.getItem('myfin_txns') || '[]'),
+            fds: JSON.parse(localStorage.getItem('myfin_fds') || '[]'),
+            stocks: JSON.parse(localStorage.getItem('myfin_stocks') || '[]')
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date().toISOString().split('T')[0];
+            const txnDateEl = document.getElementById('txnDate');
+            if (txnDateEl) txnDateEl.value = today;
+
+            renderAll();
+            fetchSheetData();
+        });
+
+        function setSyncStatus(msg, isSuccess) {
+            const statusEl = document.getElementById('syncStatus');
+            statusEl.innerText = msg;
+            statusEl.className = 'sync-status ' + (isSuccess ? 'sync-success' : 'sync-pending');
+        }
+
+        // Navigation
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+            document.getElementById('mainContent').classList.toggle('expanded');
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+
+            const target = document.getElementById(tabId);
+            if (target) target.classList.add('active');
+
+            const nav = document.getElementById(`nav-${tabId}`);
+            if (nav) nav.classList.add('active');
+        }
+
+        // Fetch Initial Data from Google Sheets
+        async function fetchSheetData() {
+            if (!GOOGLE_SHEET_URL) {
+                setSyncStatus("Local Mode (No Sheet URL)", false);
+                return;
+            }
+
+            try {
+                setSyncStatus("Syncing...", false);
+                const res = await fetch(GOOGLE_SHEET_URL);
+                const data = await res.json();
+
+                if (data.status === "success") {
+                    if (data.transactions && data.transactions.length) store.transactions = data.transactions;
+                    if (data.fixedDeposits && data.fixedDeposits.length) store.fds = data.fixedDeposits;
+                    if (data.stocks && data.stocks.length) store.stocks = data.stocks;
+
+                    saveLocal();
+                    renderAll();
+                    setSyncStatus("Synced with Google Sheets", true);
+                } else {
+                    setSyncStatus("Sheet Read Error", false);
+                }
+            } catch (err) {
+                console.error("Fetch error:", err);
+                setSyncStatus("Offline / Cache Mode", false);
+            }
+        }
+
+        function saveLocal() {
+            localStorage.setItem('myfin_txns', JSON.stringify(store.transactions));
+            localStorage.setItem('myfin_fds', JSON.stringify(store.fds));
+            localStorage.setItem('myfin_stocks', JSON.stringify(store.stocks));
+        }
+
+        // Add Transaction
+        async function addTransaction(e) {
+            e.preventDefault();
+            const amt = parseFloat(document.getElementById('txnAmount').value) || 0;
+            const type = document.getElementById('txnType').value;
+
+            const payload = {
+                action: "addTransaction",
+                id: 'TXN-' + Date.now().toString().slice(-5),
+                date: document.getElementById('txnDate').value,
+                type: type,
+                category: document.getElementById('txnCategory').value,
+                account: document.getElementById('txnAccount').value,
+                mode: document.getElementById('txnMode').value,
+                desc: "Dashboard Entry",
+                source: "Web App",
+                income: type === "Income" ? amt : 0,
+                expense: type === "Expense" ? amt : 0,
+                status: "Completed",
+                notes: ""
+            };
+
+            store.transactions.unshift(payload);
+            saveLocal();
+            renderAll();
+            e.target.reset();
+
+            postToSheet(payload);
+        }
+
+        // Add Fixed Deposit
+        async function addFD(e) {
+            e.preventDefault();
+            const amt = parseFloat(document.getElementById('fdAmount').value) || 0;
+            const rate = parseFloat(document.getElementById('fdRate').value) || 0;
+
+            const payload = {
+                action: "addFD",
+                ref: 'FD-' + Date.now().toString().slice(-5),
+                bank: document.getElementById('fdBank').value,
+                principal: amt,
+                rate: rate,
+                startDate: new Date().toISOString().split('T')[0],
+                maturity: document.getElementById('fdMaturity').value,
+                expectedInterest: amt * (rate / 100)
+            };
+
+            store.fds.unshift(payload);
+            saveLocal();
+            renderAll();
+            e.target.reset();
+
+            postToSheet(payload);
+        }
+
+        // Add Stock
+        async function addStock(e) {
+            e.preventDefault();
+            const qty = parseInt(document.getElementById('stockQty').value) || 0;
+            const price = parseFloat(document.getElementById('stockPrice').value) || 0;
+
+            const payload = {
+                action: "addStock",
+                symbol: document.getElementById('stockName').value.toUpperCase(),
+                type: "Equity",
+                shares: qty,
+                price: price,
+                totalValue: qty * price,
+                broker: "Self",
+                date: new Date().toISOString().split('T')[0]
+            };
+
+            store.stocks.unshift(payload);
+            saveLocal();
+            renderAll();
+            e.target.reset();
+
+            postToSheet(payload);
+        }
+
+        // Send Data to Apps Script
+        async function postToSheet(payload) {
+            if (!GOOGLE_SHEET_URL) return;
+
+            try {
+                setSyncStatus("Saving to Sheet...", false);
+                await fetch(GOOGLE_SHEET_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload)
+                });
+                setSyncStatus("Saved to Google Sheet!", true);
+            } catch (err) {
+                console.error("Post error:", err);
+                setSyncStatus("Save Failed (Stored Locally)", false);
+            }
+        }
+
+        const formatINR = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(val || 0);
+
+        function renderAll() {
+            let totalIncome = 0;
+            let totalExpense = 0;
+
+            store.transactions.forEach(t => {
+                const inc = parseFloat(t.Income || t.income || 0);
+                const exp = parseFloat(t.Expense || t.expense || 0);
+                if (inc) totalIncome += inc;
+                if (exp) totalExpense += exp;
+                if (!inc && !exp) {
+                    if (t.Type === 'Income' || t.type === 'Income') totalIncome += parseFloat(t.Amount || t.amount || 0);
+                    if (t.Type === 'Expense' || t.type === 'Expense') totalExpense += parseFloat(t.Amount || t.amount || 0);
+                }
+            });
+
+            document.getElementById('dashTotalBalance').innerText = formatINR(totalIncome - totalExpense);
+            document.getElementById('dashMonthlyIncome').innerText = '+' + formatINR(totalIncome);
+            document.getElementById('dashMonthlyExpense').innerText = '-' + formatINR(totalExpense);
+
+            // FDs total
+            let totalFd = store.fds.reduce((acc, f) => acc + (parseFloat(f.Principal || f.principal || 0)), 0);
+            document.getElementById('dashFdValue').innerText = formatINR(totalFd);
+
+            // Stocks total
+            let totalStock = store.stocks.reduce((acc, s) => acc + (parseFloat(s['Total Value'] || s.totalValue || (s.shares * s.price) || 0)), 0);
+            document.getElementById('dashStockValue').innerText = formatINR(totalStock);
+
+            // Render Recent
+            const recentBody = document.getElementById('recentActivityBody');
+            if (store.transactions.length === 0) {
+                recentBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No activity recorded</td></tr>`;
+            } else {
+                recentBody.innerHTML = store.transactions.slice(0, 5).map(t => {
+                    const type = t.Type || t.type || 'Income';
+                    const amt = parseFloat(t.Income || t.income || t.Expense || t.expense || t.Amount || 0);
+                    return `
+                        <tr>
+                            <td>${t.Date || t.date || ''}</td>
+                            <td>${t.Category || t.category || ''}</td>
+                            <td><span class="badge ${type === 'Income' ? 'badge-income' : 'badge-expense'}">${type}</span></td>
+                            <td>${t.Account || t.account || ''}</td>
+                            <td style="font-weight:bold; color: ${type === 'Income' ? 'var(--accent-green)' : 'var(--accent-red)'}">
+                                ${type === 'Income' ? '+' : '-'}${formatINR(amt)}
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            // Render Full Transactions
+            const fullBody = document.getElementById('fullTransactionTableBody');
+            fullBody.innerHTML = store.transactions.length ? store.transactions.map(t => `
+                <tr>
+                    <td>${t.ID || t.id || '-'}</td>
+                    <td>${t.Date || t.date || ''}</td>
+                    <td>${t.Type || t.type || ''}</td>
+                    <td>${t.Category || t.category || ''}</td>
+                    <td>${t.Account || t.account || ''}</td>
+                    <td>${formatINR(t.Income || t.income || t.Expense || t.expense || t.Amount || 0)}</td>
+                </tr>
+            `).join('') : `<tr><td colspan="6" style="text-align:center;">No transactions found</td></tr>`;
+
+            // Render FDs
+            const fdBody = document.getElementById('fdTableBody');
+            fdBody.innerHTML = store.fds.length ? store.fds.map(f => `
+                <tr>
+                    <td>${f.Ref || f.ref || '-'}</td>
+                    <td>${f.Bank || f.bank || ''}</td>
+                    <td>${formatINR(f.Principal || f.principal || 0)}</td>
+                    <td>${f.Rate || f.rate || 0}%</td>
+                    <td>${f['Maturity Date'] || f.maturity || ''}</td>
+                </tr>
+            `).join('') : `<tr><td colspan="5" style="text-align:center;">No FDs tracked</td></tr>`;
+
+            // Render Stocks
+            const stockBody = document.getElementById('stocksTableBody');
+            stockBody.innerHTML = store.stocks.length ? store.stocks.map(s => `
+                <tr>
+                    <td>${s.Symbol || s.symbol || ''}</td>
+                    <td>${s.Shares || s.shares || 0}</td>
+                    <td>${formatINR(s.Price || s.price || 0)}</td>
+                    <td>${formatINR(s['Total Value'] || s.totalValue || 0)}</td>
+                </tr>
+            `).join('') : `<tr><td colspan="4" style="text-align:center;">No stocks recorded</td></tr>`;
+        }
+    </script>
+</body>
+</html>
