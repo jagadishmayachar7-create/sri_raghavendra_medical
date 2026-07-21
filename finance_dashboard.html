@@ -163,53 +163,97 @@
         .view-section { display: none; }
         .view-section.active { display: block; }
 
-        /* Grid & Cards */
+        /* Compact Grid & Cards */
         .grid-5 {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
         }
 
         .card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 14px;
-            margin-bottom: 20px;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 0;
         }
 
         .card-title {
-            font-size: 0.75rem;
+            font-size: 0.68rem;
             color: var(--text-muted);
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             text-transform: uppercase;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .card-value { font-size: 1.3rem; font-weight: bold; }
+        .card-value { font-size: 1.1rem; font-weight: bold; }
         .income-val { color: var(--accent-green); }
         .expense-val { color: var(--accent-red); }
         .stocks-val { color: var(--accent-gold); }
 
-        /* Form Row Layout */
-        .inline-form-row {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: flex-end;
+        /* Small Display Box / Mini Stats Grid */
+        .small-box-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
             gap: 10px;
             margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        .small-box {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .small-box-label {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .small-box-val {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        /* Compact Transaction Form Layout */
+        .txn-card-compact {
+            max-width: 520px;
+            margin-bottom: 20px;
+            padding: 14px 16px;
+        }
+
+        .compact-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px 12px;
+            margin-top: 10px;
+        }
+
+        .compact-form-grid .full-width {
+            grid-column: span 2;
         }
 
         .inline-group {
             display: flex;
             flex-direction: column;
             gap: 3px;
-            flex: 1;
-            min-width: 120px;
         }
 
         .inline-group label {
-            font-size: 0.72rem;
+            font-size: 0.7rem;
             color: var(--text-muted);
             font-weight: 600;
         }
@@ -218,11 +262,11 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             border: 1px solid var(--border-color);
-            padding: 6px 8px;
+            padding: 5px 8px;
             border-radius: 5px;
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             outline: none;
-            height: 34px;
+            height: 32px;
             width: 100%;
         }
 
@@ -236,6 +280,7 @@
             font-size: 0.82rem;
             cursor: pointer;
             height: 34px;
+            margin-top: 4px;
         }
 
         .btn-submit-fd { background-color: var(--accent-gold); color: #000; }
@@ -290,33 +335,27 @@
                 gap: 8px;
             }
 
-            .card { padding: 10px; margin-bottom: 12px; }
-            .card-title { font-size: 0.68rem; }
-            .card-value { font-size: 1.1rem; }
-
-            /* Stack form inputs vertically on mobile */
-            .inline-form-row {
-                flex-direction: column;
-                align-items: stretch;
+            .small-box-grid {
+                grid-template-columns: repeat(2, 1fr);
                 gap: 8px;
             }
 
-            .inline-group {
-                width: 100%;
-                min-width: 100%;
+            .card { padding: 8px 10px; }
+            .card-title { font-size: 0.62rem; }
+            .card-value { font-size: 1rem; }
+
+            .txn-card-compact { max-width: 100%; }
+
+            .compact-form-grid {
+                grid-template-columns: 1fr;
             }
 
-            .form-control {
-                height: 32px;
-                font-size: 0.78rem;
-                padding: 4px 8px;
+            .compact-form-grid .full-width {
+                grid-column: span 1;
             }
 
             .btn-inline-submit {
                 width: 100%;
-                height: 34px;
-                font-size: 0.8rem;
-                margin-top: 4px;
             }
 
             th, td { padding: 8px 10px; font-size: 0.75rem; }
@@ -354,6 +393,8 @@
         <!-- DASHBOARD SECTION -->
         <section id="dashboard" class="view-section active">
             <h1 style="margin-bottom:12px; font-size:1.15rem;">Overview Dashboard</h1>
+            
+            <!-- Compact Main Grid Cards -->
             <div class="grid-5">
                 <div class="card">
                     <div class="card-title">Total Balance</div>
@@ -377,6 +418,26 @@
                 </div>
             </div>
 
+            <!-- Small Display Boxes Grid -->
+            <div class="small-box-grid">
+                <div class="small-box">
+                    <div class="small-box-label">💼 Net Worth</div>
+                    <div class="small-box-val" id="boxNetWorth" style="color: var(--accent-blue);">₹0.00</div>
+                </div>
+                <div class="small-box">
+                    <div class="small-box-label">📈 Savings Rate</div>
+                    <div class="small-box-val" id="boxSavingsRate" style="color: var(--accent-green);">0%</div>
+                </div>
+                <div class="small-box">
+                    <div class="small-box-label">📂 Investments</div>
+                    <div class="small-box-val" id="boxActiveInvestments">0 Active</div>
+                </div>
+                <div class="small-box">
+                    <div class="small-box-label">💸 Avg Expense</div>
+                    <div class="small-box-val" id="boxAvgExpense" style="color: var(--accent-red);">₹0.00</div>
+                </div>
+            </div>
+
             <div class="table-container">
                 <div class="table-title">Recent Activity</div>
                 <table>
@@ -394,10 +455,11 @@
         <section id="transactions" class="view-section">
             <h1 style="margin-bottom:12px; font-size:1.15rem;">Transactions Registry</h1>
             
-            <div class="card">
-                <h3 style="font-size: 0.95rem;">➕ Add New Transaction</h3>
+            <!-- Compact Add Transaction Card -->
+            <div class="card txn-card-compact">
+                <h3 style="font-size: 0.9rem;">➕ Add New Transaction</h3>
                 <form onsubmit="addTransaction(event)">
-                    <div class="inline-form-row">
+                    <div class="compact-form-grid">
                         <div class="inline-group">
                             <label>Date</label>
                             <input type="date" id="txnDate" class="form-control" required>
@@ -429,7 +491,9 @@
                                 <option value="Cash">Cash</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn-inline-submit">💾 Save Entry</button>
+                        <div class="full-width">
+                            <button type="submit" class="btn-inline-submit" style="width: 100%;">💾 Save Entry</button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -450,10 +514,10 @@
         <!-- FD SECTION -->
         <section id="fd" class="view-section">
             <h1 style="margin-bottom:12px; font-size:1.15rem;">Fixed Deposits</h1>
-            <div class="card">
-                <h3 style="font-size: 0.95rem;">🏦 Add Fixed Deposit</h3>
+            <div class="card txn-card-compact">
+                <h3 style="font-size: 0.9rem;">🏦 Add Fixed Deposit</h3>
                 <form onsubmit="addFD(event)">
-                    <div class="inline-form-row">
+                    <div class="compact-form-grid">
                         <div class="inline-group">
                             <label>Bank Name</label>
                             <input type="text" id="fdBank" class="form-control" placeholder="HDFC Bank" required>
@@ -470,7 +534,9 @@
                             <label>Maturity Date</label>
                             <input type="date" id="fdMaturity" class="form-control" required>
                         </div>
-                        <button type="submit" class="btn-inline-submit btn-submit-fd">💾 Add FD</button>
+                        <div class="full-width">
+                            <button type="submit" class="btn-inline-submit btn-submit-fd" style="width: 100%;">💾 Add FD</button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -490,10 +556,10 @@
         <!-- STOCKS SECTION -->
         <section id="stocks" class="view-section">
             <h1 style="margin-bottom:12px; font-size:1.15rem;">Stocks Holdings</h1>
-            <div class="card">
-                <h3 style="font-size: 0.95rem;">📈 Add Stock Entry</h3>
+            <div class="card txn-card-compact">
+                <h3 style="font-size: 0.9rem;">📈 Add Stock Entry</h3>
                 <form onsubmit="addStock(event)">
-                    <div class="inline-form-row">
+                    <div class="compact-form-grid">
                         <div class="inline-group">
                             <label>Stock Symbol</label>
                             <input type="text" id="stockName" class="form-control" placeholder="RELIANCE" required>
@@ -502,11 +568,13 @@
                             <label>Shares Qty</label>
                             <input type="number" id="stockQty" class="form-control" placeholder="10" required>
                         </div>
-                        <div class="inline-group">
+                        <div class="inline-group full-width">
                             <label>Avg Price (₹)</label>
                             <input type="number" step="0.01" id="stockPrice" class="form-control" placeholder="2500" required>
                         </div>
-                        <button type="submit" class="btn-inline-submit btn-submit-stock">💾 Add Stock</button>
+                        <div class="full-width">
+                            <button type="submit" class="btn-inline-submit btn-submit-stock" style="width: 100%;">💾 Add Stock</button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -713,19 +781,28 @@
         function renderAll() {
             let totalIncome = 0;
             let totalExpense = 0;
+            let expenseCount = 0;
 
             store.transactions.forEach(t => {
                 const inc = parseFloat(t.Income || t.income || 0);
                 const exp = parseFloat(t.Expense || t.expense || 0);
                 if (inc) totalIncome += inc;
-                if (exp) totalExpense += exp;
+                if (exp) {
+                    totalExpense += exp;
+                    expenseCount++;
+                }
                 if (!inc && !exp) {
                     if (t.Type === 'Income' || t.type === 'Income') totalIncome += parseFloat(t.Amount || t.amount || 0);
-                    if (t.Type === 'Expense' || t.type === 'Expense') totalExpense += parseFloat(t.Amount || t.amount || 0);
+                    if (t.Type === 'Expense' || t.type === 'Expense') {
+                        totalExpense += parseFloat(t.Amount || t.amount || 0);
+                        expenseCount++;
+                    }
                 }
             });
 
-            document.getElementById('dashTotalBalance').innerText = formatINR(totalIncome - totalExpense);
+            const currentBalance = totalIncome - totalExpense;
+
+            document.getElementById('dashTotalBalance').innerText = formatINR(currentBalance);
             document.getElementById('dashMonthlyIncome').innerText = '+' + formatINR(totalIncome);
             document.getElementById('dashMonthlyExpense').innerText = '-' + formatINR(totalExpense);
 
@@ -736,6 +813,17 @@
             // Stocks total
             let totalStock = store.stocks.reduce((acc, s) => acc + (parseFloat(s['Total Value'] || s.totalValue || (s.shares * s.price) || 0)), 0);
             document.getElementById('dashStockValue').innerText = formatINR(totalStock);
+
+            // Small Display Box Values
+            const netWorth = currentBalance + totalFd + totalStock;
+            const savingsRate = totalIncome > 0 ? (((totalIncome - totalExpense) / totalIncome) * 100).toFixed(1) : 0;
+            const activeInvestmentsCount = store.fds.length + store.stocks.length;
+            const avgExpense = expenseCount > 0 ? totalExpense / expenseCount : 0;
+
+            document.getElementById('boxNetWorth').innerText = formatINR(netWorth);
+            document.getElementById('boxSavingsRate').innerText = (savingsRate > 0 ? '+' : '') + savingsRate + '%';
+            document.getElementById('boxActiveInvestments').innerText = activeInvestmentsCount + ' Total';
+            document.getElementById('boxAvgExpense').innerText = formatINR(avgExpense);
 
             // Render Recent
             const recentBody = document.getElementById('recentActivityBody');
