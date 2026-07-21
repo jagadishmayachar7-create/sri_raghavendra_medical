@@ -274,10 +274,53 @@
         .sync-success { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
         .sync-pending { background: rgba(245, 158, 11, 0.2); color: var(--accent-gold); }
 
+        /* Mobile Styles */
         @media (max-width: 767px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.active-mobile { transform: translateX(0); }
-            .main-content { margin-left: 0 !important; padding: 12px; }
+            .main-content { margin-left: 0 !important; padding: 10px; }
+
+            .top-navbar { padding: 0 10px; }
+            .brand-logo { font-size: 0.95rem; margin-left: 5px; }
+            .sync-status { font-size: 0.65rem; padding: 2px 5px; margin-left: 4px; }
+            .btn-header-action { padding: 4px 6px; font-size: 0.7rem; }
+
+            .grid-5 {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+
+            .card { padding: 10px; margin-bottom: 12px; }
+            .card-title { font-size: 0.68rem; }
+            .card-value { font-size: 1.1rem; }
+
+            /* Stack form inputs vertically on mobile */
+            .inline-form-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+
+            .inline-group {
+                width: 100%;
+                min-width: 100%;
+            }
+
+            .form-control {
+                height: 32px;
+                font-size: 0.78rem;
+                padding: 4px 8px;
+            }
+
+            .btn-inline-submit {
+                width: 100%;
+                height: 34px;
+                font-size: 0.8rem;
+                margin-top: 4px;
+            }
+
+            th, td { padding: 8px 10px; font-size: 0.75rem; }
+            .table-title { font-size: 0.82rem; padding: 10px; }
         }
     </style>
 </head>
@@ -310,7 +353,7 @@
 
         <!-- DASHBOARD SECTION -->
         <section id="dashboard" class="view-section active">
-            <h1 style="margin-bottom:15px; font-size:1.3rem;">Overview Dashboard</h1>
+            <h1 style="margin-bottom:12px; font-size:1.15rem;">Overview Dashboard</h1>
             <div class="grid-5">
                 <div class="card">
                     <div class="card-title">Total Balance</div>
@@ -349,10 +392,10 @@
 
         <!-- TRANSACTIONS SECTION -->
         <section id="transactions" class="view-section">
-            <h1 style="margin-bottom:15px; font-size:1.3rem;">Transactions Registry</h1>
+            <h1 style="margin-bottom:12px; font-size:1.15rem;">Transactions Registry</h1>
             
             <div class="card">
-                <h3>➕ Add New Transaction</h3>
+                <h3 style="font-size: 0.95rem;">➕ Add New Transaction</h3>
                 <form onsubmit="addTransaction(event)">
                     <div class="inline-form-row">
                         <div class="inline-group">
@@ -406,9 +449,9 @@
 
         <!-- FD SECTION -->
         <section id="fd" class="view-section">
-            <h1 style="margin-bottom:15px; font-size:1.3rem;">Fixed Deposits</h1>
+            <h1 style="margin-bottom:12px; font-size:1.15rem;">Fixed Deposits</h1>
             <div class="card">
-                <h3>🏦 Add Fixed Deposit</h3>
+                <h3 style="font-size: 0.95rem;">🏦 Add Fixed Deposit</h3>
                 <form onsubmit="addFD(event)">
                     <div class="inline-form-row">
                         <div class="inline-group">
@@ -446,9 +489,9 @@
 
         <!-- STOCKS SECTION -->
         <section id="stocks" class="view-section">
-            <h1 style="margin-bottom:15px; font-size:1.3rem;">Stocks Holdings</h1>
+            <h1 style="margin-bottom:12px; font-size:1.15rem;">Stocks Holdings</h1>
             <div class="card">
-                <h3>📈 Add Stock Entry</h3>
+                <h3 style="font-size: 0.95rem;">📈 Add Stock Entry</h3>
                 <form onsubmit="addStock(event)">
                     <div class="inline-form-row">
                         <div class="inline-group">
@@ -508,8 +551,13 @@
 
         // Navigation
         function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('collapsed');
-            document.getElementById('mainContent').classList.toggle('expanded');
+            const sidebar = document.getElementById('sidebar');
+            if (window.innerWidth <= 767) {
+                sidebar.classList.toggle('active-mobile');
+            } else {
+                sidebar.classList.toggle('collapsed');
+                document.getElementById('mainContent').classList.toggle('expanded');
+            }
         }
 
         function switchTab(tabId) {
@@ -521,6 +569,10 @@
 
             const nav = document.getElementById(`nav-${tabId}`);
             if (nav) nav.classList.add('active');
+
+            if (window.innerWidth <= 767) {
+                document.getElementById('sidebar').classList.remove('active-mobile');
+            }
         }
 
         // Fetch Initial Data from Google Sheets
