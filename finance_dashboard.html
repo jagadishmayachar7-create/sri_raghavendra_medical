@@ -1,1299 +1,1046 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finance & Stock Portfolio Tracker</title>
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --accent-green: #10b981;
-            --accent-red: #ef4444;
-            --accent-blue: #3b82f6;
-            --accent-purple: #8b5cf6;
-            --accent-gold: #f59e0b;
-            --accent-cyan: #06b6d4;
-            --accent-pink: #ec4899;
-            --accent-orange: #f97316;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border-color: #334155;
-            --sidebar-width: 240px;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Finance Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Chart.js CDN for Visual Charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            display: flex;
-            min-height: 100vh;
-        }
+body{
+    background:#0f172a;
+    color:#fff;
+    padding-bottom:80px;
+}
 
-        .top-navbar {
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            height: 55px;
-            background-color: var(--card-bg);
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            z-index: 1000;
-        }
+.header{
+    position:sticky;
+    top:0;
+    z-index:100;
+    background:#111827;
+    padding:15px 18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:1px solid #1f2937;
+}
 
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+.header h1{
+    font-size:20px;
+    color:#38bdf8;
+}
 
-        .menu-toggle {
-            background: none;
-            border: none;
-            color: var(--text-main);
-            font-size: 1.4rem;
-            cursor: pointer;
-        }
+.container{
+    padding:16px;
+}
 
-        .brand {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: var(--accent-blue);
-        }
+.tab-content {
+    display: none;
+}
 
-        .sync-badge {
-            font-size: 0.75rem;
-            padding: 3px 8px;
-            border-radius: 4px;
-            background: rgba(16, 185, 129, 0.2);
-            color: var(--accent-green);
-        }
+.tab-content.active {
+    display: block;
+}
 
-        .sidebar {
-            width: var(--sidebar-width);
-            background-color: var(--card-bg);
-            border-right: 1px solid var(--border-color);
-            position: fixed;
-            top: 55px; bottom: 0; left: 0;
-            padding-top: 15px;
-            transition: transform 0.3s ease;
-            z-index: 999;
-        }
+.net-worth{
+    background:linear-gradient(135deg,#2563eb,#1d4ed8);
+    border-radius:20px;
+    padding:24px;
+    margin-bottom:18px;
+    box-shadow:0 10px 25px rgba(37,99,235,.3);
+}
 
-        .sidebar.collapsed { transform: translateX(-100%); }
+.net-worth h2{
+    font-size:16px;
+    opacity:.9;
+    margin-bottom:10px;
+}
 
-        .nav-list { list-style: none; }
+.net-worth .amount{
+    font-size:36px;
+    font-weight:700;
+    margin-bottom:8px;
+}
 
-        .nav-item {
-            padding: 12px 20px;
-            cursor: pointer;
-            color: var(--text-muted);
-            font-size: 0.88rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+.net-worth .change{
+    font-size:13px;
+    opacity:.9;
+}
 
-        .nav-item:hover, .nav-item.active {
-            background-color: rgba(59, 130, 246, 0.1);
-            color: var(--text-main);
-            border-left: 4px solid var(--accent-blue);
-        }
+.grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+    margin-bottom:18px;
+}
 
-        .main-content {
-            margin-top: 55px;
-            margin-left: var(--sidebar-width);
-            flex: 1;
-            padding: 24px;
-            transition: margin-left 0.3s ease;
-        }
+.card{
+    background:#1e293b;
+    border-radius:18px;
+    padding:16px;
+    border:1px solid #334155;
+}
 
-        .main-content.expanded { margin-left: 0; }
+.card .label{
+    font-size:13px;
+    color:#94a3b8;
+    margin-bottom:8px;
+}
 
-        .view-section {
-            display: none;
-            max-width: 1260px;
-            margin: 0 auto;
-        }
+.card .value{
+    font-size:22px;
+    font-weight:700;
+}
 
-        .view-section.active { display: block; }
+.card .sub{
+    font-size:12px;
+    margin-top:6px;
+    color: #94a3b8;
+}
 
-        .grid-summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 18px;
-            margin-bottom: 24px;
-        }
+.chart-card {
+    background: #1e293b;
+    border-radius: 18px;
+    padding: 18px;
+    border: 1px solid #334155;
+    margin-bottom: 18px;
+}
 
-        .card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 18px 20px;
-        }
+.chart-card h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #38bdf8;
+    margin-bottom: 14px;
+}
 
-        .card-title {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin-bottom: 6px;
-        }
+.chart-container {
+    position: relative;
+    width: 100%;
+    max-height: 250px;
+    display: flex;
+    justify-content: center;
+}
 
-        .card-value {
-            font-size: 1.3rem;
-            font-weight: bold;
-        }
+.green{color:#22c55e;}
+.red{color:#ef4444;}
+.blue{color:#38bdf8;}
+.orange{color:#f97316;}
+.purple{color:#a78bfa;}
 
-        .val-networth { color: var(--accent-gold); }
-        .val-income { color: var(--accent-green); }
-        .val-expense { color: var(--accent-red); }
-        .val-balance { color: var(--accent-blue); }
-        .val-fd { color: var(--accent-purple); }
-        .val-fd-interest { color: var(--accent-cyan); }
-        .val-biz { color: var(--accent-pink); }
-        .val-emi { color: var(--accent-orange); }
+.section-title{
+    font-size:18px;
+    font-weight:600;
+    margin:20px 0 14px;
+}
 
-        .charts-grid {
-            display: grid;
-            grid-template-columns: 1.6fr 1fr;
-            gap: 24px;
-            margin-top: 24px;
-        }
+.detail-card {
+    background: #1e293b;
+    border-radius: 20px;
+    padding: 24px;
+    border: 1px solid #334155;
+    margin-bottom: 16px;
+}
 
-        .chart-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-        }
+.detail-card .main-val {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 10px 0;
+}
 
-        .chart-header {
-            font-weight: bold;
-            font-size: 0.9rem;
-            margin-bottom: 15px;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+.list-item {
+    background:#1e293b;
+    border-radius:18px;
+    padding:16px;
+    border:1px solid #334155;
+    margin-bottom:12px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
 
-        .chart-wrapper {
-            position: relative;
-            flex: 1;
-            width: 100%;
-            min-height: 250px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+.list-item-left {
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
 
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 10px;
-        }
+.list-item-title {
+    font-weight:600;
+    font-size:15px;
+}
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            width: 100%;
-        }
+.list-item-sub {
+    font-size:12px;
+    color:#94a3b8;
+}
 
-        .form-group label {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
+.list-item-amount {
+    font-weight:700;
+    font-size:16px;
+    text-align: right;
+}
 
-        .form-control {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            border: 1px solid var(--border-color);
-            padding: 10px 14px;
-            border-radius: 5px;
-            font-size: 0.85rem;
-            outline: none;
-            width: 100%;
-        }
+/* Bottom Nav Menu */
+.bottom-nav{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    background:#111827;
+    border-top:1px solid #1f2937;
+    display:flex;
+    justify-content:space-around;
+    padding:8px 0;
+    z-index:100;
+    overflow-x: auto;
+}
 
-        .btn-submit {
-            background-color: var(--accent-blue);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 16px;
-            width: 100%;
-        }
+.bottom-nav button{
+    background: none;
+    border: none;
+    color:#94a3b8;
+    font-size:11px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:3px;
+    cursor: pointer;
+    min-width: 55px;
+    flex: 1;
+}
 
-        .table-container {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            margin-top: 24px;
-        }
+.bottom-nav button.active{
+    color:#38bdf8;
+}
 
-        .table-header {
-            padding: 15px 20px;
-            font-weight: bold;
-            font-size: 0.9rem;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+.bottom-nav .icon{
+    font-size:18px;
+}
 
-        .btn-reset {
-            background: rgba(239, 68, 68, 0.2);
-            color: var(--accent-red);
-            border: 1px solid var(--accent-red);
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            cursor: pointer;
-        }
+/* Floating Action Button */
+.fab {
+    position: fixed;
+    bottom: 85px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #38bdf8;
+    color: #0f172a;
+    font-size: 28px;
+    border: none;
+    box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
+    cursor: pointer;
+    z-index: 99;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
+/* Modal Overlay & Form Card */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 16px;
+}
 
-        th, td {
-            padding: 12px 18px;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 0.85rem;
-        }
+.modal-overlay.active {
+    display: flex;
+}
 
-        th {
-            background-color: rgba(0, 0, 0, 0.2);
-            color: var(--text-muted);
-        }
+.modal {
+    background: #1e293b;
+    border-radius: 20px;
+    padding: 24px;
+    width: 100%;
+    max-width: 440px;
+    border: 1px solid #334155;
+    max-height: 90vh;
+    overflow-y: auto;
+}
 
-        .badge {
-            padding: 3px 6px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: bold;
-        }
+.form-group {
+    margin-bottom: 12px;
+}
 
-        .badge-income { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
-        .badge-expense { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
-        .badge-active { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
-        .badge-matured { background: rgba(148, 163, 184, 0.2); color: var(--text-muted); }
+.form-group label {
+    display: block;
+    font-size: 12px;
+    color: #94a3b8;
+    margin-bottom: 6px;
+}
 
-        .preview-box {
-            background: rgba(139, 92, 246, 0.1);
-            border: 1px dashed var(--accent-purple);
-            padding: 12px;
-            border-radius: 6px;
-            margin-top: 14px;
-            font-size: 0.85rem;
-            display: flex;
-            justify-content: space-between;
-        }
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #334155;
+    background: #0f172a;
+    color: #fff;
+    font-size: 14px;
+    outline: none;
+}
 
-        /* MOBILE RESPONSIVE TABLE STYLING */
-        @media (max-width: 640px) {
-            .table-container {
-                border: none;
-                background: transparent;
-            }
+.form-group input:focus, .form-group select:focus {
+    border-color: #38bdf8;
+}
 
-            .table-header {
-                background-color: var(--card-bg);
-                border: 1px solid var(--border-color);
-                border-radius: 8px;
-                margin-bottom: 10px;
-            }
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+}
 
-            table, thead, tbody, th, td, tr { display: block; }
+.btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+}
 
-            thead tr {
-                position: absolute;
-                top: -9999px;
-                left: -9999px;
-            }
+.btn-primary { background: #38bdf8; color: #0f172a; }
+.btn-secondary { background: #334155; color: #94a3b8; }
 
-            tr {
-                background-color: var(--card-bg);
-                border: 1px solid var(--border-color);
-                border-radius: 8px;
-                margin-bottom: 12px;
-                padding: 12px 16px;
-            }
-
-            td {
-                border: none;
-                border-bottom: 1px solid rgba(51, 65, 85, 0.5);
-                position: relative;
-                padding-left: 45%;
-                text-align: right;
-                min-height: 40px;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-            }
-
-            td:last-child { border-bottom: none; }
-
-            td::before {
-                content: attr(data-label);
-                font-weight: bold;
-                color: var(--text-muted);
-                font-size: 0.78rem;
-                text-transform: uppercase;
-                text-align: left;
-            }
-        }
-
-        @media (max-width: 850px) {
-            .charts-grid { grid-template-columns: 1fr; }
-        }
-
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.active-mobile { transform: translateX(0); }
-            .main-content { margin-left: 0; padding: 12px; }
-        }
-    </style>
+@media(min-width:768px){
+    .container{
+        max-width:900px;
+        margin:auto;
+    }
+    .grid{
+        grid-template-columns:repeat(4,1fr);
+    }
+}
+</style>
 </head>
 <body>
 
-    <!-- Top Header -->
-    <header class="top-navbar">
-        <div class="header-left">
-            <button class="menu-toggle" onclick="toggleMenu()">☰</button>
-            <div class="brand">📈 Finance & Portfolio Tracker</div>
-            <span class="sync-badge" id="syncStatus">Syncing...</span>
+<div class="header">
+    <h1 id="pageTitle">💰 My Finance</h1>
+    <div id="syncIndicator" style="font-size: 12px; color: #22c55e;">● Live</div>
+</div>
+
+<div class="container">
+
+    <!-- 1. HOME TAB -->
+    <div id="homeTab" class="tab-content active">
+        <div class="net-worth">
+            <h2>Total Net Worth</h2>
+            <div class="amount" id="netWorth">Loading...</div>
+            <div class="change" id="netWorthSub">Assets - Liabilities</div>
         </div>
-    </header>
 
-    <!-- Sidebar Navigation -->
-    <nav class="sidebar" id="sidebar">
-        <ul class="nav-list">
-            <li class="nav-item active" id="nav-dashboard" onclick="switchTab('dashboard')">📊 Dashboard</li>
-            <li class="nav-item" id="nav-transactions" onclick="switchTab('transactions')">💳 Transactions</li>
-            <li class="nav-item" id="nav-fd" onclick="switchTab('fd')">🏦 Fixed Deposits</li>
-            <li class="nav-item" id="nav-stocks" onclick="switchTab('stocks')">📈 Stock Portfolio</li>
-            <li class="nav-item" id="nav-business" onclick="switchTab('business')">🏢 Business Investments</li>
-            <li class="nav-item" id="nav-loans" onclick="switchTab('loans')">🧾 Loans / EMI</li>
-        </ul>
-    </nav>
+        <div class="grid">
+            <div class="card">
+                <div class="label">Total Income</div>
+                <div class="value green" id="income">...</div>
+                <div class="sub">Cash Inflow</div>
+            </div>
 
-    <!-- Main Workspace -->
-    <main class="main-content" id="mainContent">
+            <div class="card">
+                <div class="label">Total Expense</div>
+                <div class="value red" id="expense">...</div>
+                <div class="sub">Cash Outflow</div>
+            </div>
 
-        <!-- DASHBOARD VIEW -->
-        <section id="dashboard" class="view-section active">
-            <h2 style="margin-bottom: 18px;">Portfolio Overview</h2>
+            <div class="card">
+                <div class="label">Net Savings</div>
+                <div class="value green" id="savings">...</div>
+                <div class="sub">Income - Expense</div>
+            </div>
+
+            <div class="card">
+                <div class="label">Liquid Balance</div>
+                <div class="value blue" id="balance">...</div>
+                <div class="sub">Bank + Cash</div>
+            </div>
+        </div>
+
+        <!-- VISUAL CHARTS SECTION -->
+        <div class="section-title">Analytics & Visuals</div>
+        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
             
-            <div class="grid-summary">
-                <div class="card" style="border-color: rgba(245, 158, 11, 0.4);">
-                    <div class="card-title" style="color: var(--accent-gold);">💼 Total Net Worth</div>
-                    <div class="card-value val-networth" id="dashNetWorth">₹0.00</div>
-                </div>
-                <div class="card">
-                    <div class="card-title">Liquid Balance</div>
-                    <div class="card-value val-balance" id="dashTotalBalance">₹0.00</div>
-                </div>
-                <div class="card">
-                    <div class="card-title">Total Expenses</div>
-                    <div class="card-value val-expense" id="dashTotalExpense">₹0.00</div>
-                </div>
-                <div class="card">
-                    <div class="card-title">Business Investments</div>
-                    <div class="card-value val-biz" id="dashTotalBiz">₹0.00</div>
-                </div>
-                <div class="card">
-                    <div class="card-title">Monthly Loan EMI</div>
-                    <div class="card-value val-emi" id="dashTotalEMI">₹0.00</div>
-                </div>
-                <div class="card">
-                    <div class="card-title">FD Capital</div>
-                    <div class="card-value val-fd" id="dashTotalFD">₹0.00</div>
-                </div>
-                <div class="card">
-                    <div class="card-title">Expected FD Interest</div>
-                    <div class="card-value val-fd-interest" id="dashFDInterest">₹0.00</div>
-                </div>
-                <div class="card">
-                    <div class="card-title">Stock Portfolio Value</div>
-                    <div class="card-value val-income" id="dashTotalStocks">₹0.00</div>
+            <!-- Chart 1 -->
+            <div class="chart-card">
+                <h3>📈 Income vs Expense</h3>
+                <div class="chart-container">
+                    <canvas id="incomeExpenseChart"></canvas>
                 </div>
             </div>
 
-            <!-- CHARTS -->
-            <div class="charts-grid">
-                <div class="chart-card">
-                    <div class="chart-header">📈 Investment Growth Trajectory</div>
-                    <div class="chart-wrapper">
-                        <canvas id="growthChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="chart-card">
-                    <div class="chart-header">⭕ Capital Allocation Circle</div>
-                    <div class="chart-wrapper">
-                        <canvas id="circleChart"></canvas>
-                    </div>
+            <!-- Chart 2 -->
+            <div class="chart-card">
+                <h3>🥧 Portfolio Allocation</h3>
+                <div class="chart-container">
+                    <canvas id="portfolioChart"></canvas>
                 </div>
             </div>
-        </section>
 
-        <!-- TRANSACTIONS VIEW -->
-        <section id="transactions" class="view-section">
-            <h2 style="margin-bottom: 18px;">Transactions Registry</h2>
+        </div>
 
+        <div class="section-title">Asset Breakdown</div>
+        <div class="grid">
             <div class="card">
-                <h3 style="font-size: 0.9rem; margin-bottom: 10px;">➕ Record Transaction</h3>
-                <form onsubmit="addTransaction(event)">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Date</label>
-                            <input type="date" id="txnDate" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Type</label>
-                            <select id="txnType" class="form-control">
-                                <option value="Income">Income</option>
-                                <option value="Expense" selected>Expense</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Category</label>
-                            <input type="text" id="txnCategory" class="form-control" placeholder="Salary / Groceries" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Amount (₹)</label>
-                            <input type="number" step="0.01" id="txnAmount" class="form-control" placeholder="0.00" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Account</label>
-                            <input type="text" id="txnAccount" class="form-control" placeholder="Bank / Card" required>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn-submit" id="btnSubmitTxn">Save Transaction</button>
-                </form>
+                <div class="label">🏦 Fixed Deposits</div>
+                <div class="value purple" id="fdHome">...</div>
             </div>
-
-            <div class="table-container">
-                <div class="table-header">All Logged Transactions</div>
-                <table>
-                    <thead>
-                        <tr><th>Date</th><th>Type</th><th>Category</th><th>Account</th><th>Amount</th></tr>
-                    </thead>
-                    <tbody id="fullTransactionTableBody">
-                        <tr><td colspan="5" style="text-align:center;">Loading data...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- FIXED DEPOSIT VIEW -->
-        <section id="fd" class="view-section">
-            <h2 style="margin-bottom: 18px;">Fixed Deposits (FD)</h2>
-
             <div class="card">
-                <h3 style="font-size: 0.9rem; margin-bottom: 10px;">🏦 Add New Fixed Deposit</h3>
-                <form onsubmit="addFD(event)">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Ref / FD ID</label>
-                            <input type="text" id="fdRef" class="form-control" placeholder="FD-101">
-                        </div>
-                        <div class="form-group">
-                            <label>Bank Name</label>
-                            <input type="text" id="fdBank" class="form-control" placeholder="HDFC Bank" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Start Date</label>
-                            <input type="date" id="fdDate" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Principal Amount (₹)</label>
-                            <input type="number" step="0.01" id="fdAmount" class="form-control" placeholder="50000" oninput="calcFDPreview()" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Interest Rate (% p.a.)</label>
-                            <input type="number" step="0.01" id="fdRate" class="form-control" placeholder="7.1" oninput="calcFDPreview()" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Tenure (Months)</label>
-                            <input type="number" id="fdTenure" class="form-control" placeholder="12" oninput="calcFDPreview()" required>
-                        </div>
-                    </div>
-
-                    <div class="preview-box">
-                        <span>Expected Interest: <strong id="prevInterest" style="color:var(--accent-cyan)">₹0.00</strong></span>
-                        <span>Maturity Value: <strong id="prevMaturity" style="color:var(--accent-purple)">₹0.00</strong></span>
-                    </div>
-
-                    <button type="submit" class="btn-submit" id="btnSubmitFD" style="background-color: var(--accent-purple);">Save Fixed Deposit</button>
-                </form>
+                <div class="label">🏪 Business</div>
+                <div class="value orange" id="businessHome">...</div>
             </div>
-
-            <div class="table-container">
-                <div class="table-header">Active Fixed Deposits</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Bank</th>
-                            <th>Principal</th>
-                            <th>Maturity</th>
-                            <th>Interest</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="fdTableBody">
-                        <tr><td colspan="5" style="text-align:center;">No Fixed Deposits logged</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- STOCKS VIEW -->
-        <section id="stocks" class="view-section">
-            <h2 style="margin-bottom: 18px;">Stock Portfolio</h2>
-
             <div class="card">
-                <h3 style="font-size: 0.9rem; margin-bottom: 10px;">📈 Log Stock Holding</h3>
-                <form onsubmit="addStock(event)">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>IS (Asset Type)</label>
-                            <input type="text" id="stkIs" class="form-control" placeholder="Stock" value="Stock">
-                        </div>
-                        <div class="form-group">
-                            <label>Symbol / Ticker</label>
-                            <input type="text" id="stkSymbol" class="form-control" placeholder="AAPL" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Type</label>
-                            <input type="text" id="stkType" class="form-control" placeholder="Equity / ETF" value="Equity">
-                        </div>
-                        <div class="form-group">
-                            <label>Shares (Quantity)</label>
-                            <input type="number" step="any" id="stkShares" class="form-control" placeholder="10" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Price (₹)</label>
-                            <input type="number" step="0.01" id="stkPrice" class="form-control" placeholder="185.00" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Broker</label>
-                            <input type="text" id="stkBroker" class="form-control" placeholder="Zerodha / Groww">
-                        </div>
-                        <div class="form-group">
-                            <label>Date</label>
-                            <input type="date" id="stkDate" class="form-control">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn-submit" id="btnSubmitStock">Add Stock Holding</button>
-                </form>
+                <div class="label">💳 Loans</div>
+                <div class="value red" id="loanHome">...</div>
             </div>
+            <div class="card">
+                <div class="label">📊 Stocks</div>
+                <div class="value blue" id="stocksHome">...</div>
+            </div>
+        </div>
+    </div>
 
-            <div class="table-container">
-                <div class="table-header">
-                    <span>Stock Holdings</span>
-                    <button class="btn-reset" onclick="resetStocksToDefault()">Reset Defaults</button>
+    <!-- 2. TRANSACTIONS TAB -->
+    <div id="transactionsTab" class="tab-content">
+        <div class="section-title">Recent Transactions</div>
+        <div id="transactionList">
+            <div class="list-item">
+                <div class="list-item-left">
+                    <div class="list-item-title">Loading...</div>
+                    <div class="list-item-sub">--</div>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Symbol</th>
-                            <th>Shares</th>
-                            <th>Price</th>
-                            <th>Total Value</th>
-                            <th>Broker</th>
-                        </tr>
-                    </thead>
-                    <tbody id="stocksTableBody">
-                        <tr><td colspan="5" style="text-align:center;">No stock holdings logged</td></tr>
-                    </tbody>
-                </table>
+                <div class="list-item-amount">--</div>
             </div>
-        </section>
+        </div>
+    </div>
 
-        <!-- SEPARATE BUSINESS INVESTMENT VIEW -->
-        <section id="business" class="view-section">
-            <h2 style="margin-bottom: 18px;">Business Investments</h2>
+    <!-- 3. FIXED DEPOSITS TAB -->
+    <div id="fdTab" class="tab-content">
+        <div class="section-title">Fixed Deposits</div>
+        <div class="detail-card">
+            <div class="card-label">Total FD Holdings</div>
+            <div class="main-val purple" id="fdVal">...</div>
+            <div class="sub" id="fdCount">0 Accounts</div>
+        </div>
+        <div class="section-title">FD Records</div>
+        <div id="fdList"></div>
+    </div>
 
-            <div class="card">
-                <h3 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--accent-pink);">🏢 Log Business Investment</h3>
-                <form onsubmit="addBusinessInvest(event)">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Business / Venture Name</label>
-                            <input type="text" id="bizName" class="form-control" placeholder="E.g., Tech Venture" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Invested Amount (₹)</label>
-                            <input type="number" step="0.01" id="bizAmount" class="form-control" placeholder="150000" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Equity Stake / Share (%)</label>
-                            <input type="number" step="0.1" id="bizEquity" class="form-control" placeholder="10">
-                        </div>
+    <!-- 4. BUSINESS TAB -->
+    <div id="businessTab" class="tab-content">
+        <div class="section-title">Business Investments</div>
+        <div class="detail-card">
+            <div class="card-label">Total Business Capital</div>
+            <div class="main-val orange" id="businessVal">...</div>
+            <div class="sub green" id="businessCount">0 Investments</div>
+        </div>
+        <div class="section-title">Business Ventures</div>
+        <div id="businessList"></div>
+    </div>
+
+    <!-- 5. LOANS TAB -->
+    <div id="loansTab" class="tab-content">
+        <div class="section-title">Loans & Liabilities</div>
+        <div class="grid">
+            <div class="detail-card" style="margin-bottom:0;">
+                <div class="card-label">Total Outstanding</div>
+                <div class="main-val red" id="loanVal">...</div>
+                <div class="sub" id="loanCount">0 Accounts</div>
+            </div>
+            <div class="detail-card" style="margin-bottom:0;">
+                <div class="card-label">Total Monthly EMI</div>
+                <div class="main-val orange" id="loanEmiVal">...</div>
+                <div class="sub">Recurring Outflow</div>
+            </div>
+        </div>
+        <div class="section-title">Loan Accounts</div>
+        <div id="loansList"></div>
+    </div>
+
+    <!-- 6. STOCKS TAB -->
+    <div id="stocksTab" class="tab-content">
+        <div class="section-title">Stocks Portfolio</div>
+        <div class="detail-card">
+            <div class="card-label">Current Stocks Valuation</div>
+            <div class="main-val blue" id="stocksVal">...</div>
+            <div class="sub green" id="stocksCount">0 Holdings</div>
+        </div>
+        <div class="section-title">Stock Holdings</div>
+        <div id="stocksList"></div>
+    </div>
+
+</div>
+
+<!-- Floating Action Add Button -->
+<button class="fab" onclick="openModal()">+</button>
+
+<!-- Dynamic Entry Modal Form -->
+<div class="modal-overlay" id="inputModal">
+    <div class="modal">
+        <h3 style="margin-bottom: 12px; color: #38bdf8;">➕ Add New Entry</h3>
+        
+        <div class="form-group">
+            <label>Select Category</label>
+            <select id="entryType" onchange="toggleFormFields()">
+                <option value="Transactions">💸 Transaction (Income / Expense)</option>
+                <option value="Fixed Deposits">🏦 Fixed Deposit</option>
+                <option value="Business">🏪 Business Investment</option>
+                <option value="Loans">💳 Loan / Liability</option>
+                <option value="Stocks">📊 Stock / Equity</option>
+            </select>
+        </div>
+
+        <form id="addForm" onsubmit="submitData(event)">
+            
+            <!-- 1. TRANSACTIONS -->
+            <div id="fieldsTransactions" class="form-section">
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="txType">
+                        <option value="Expense">Expense</option>
+                        <option value="Income">Income</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Category / Title</label>
+                    <input type="text" id="txCategory" placeholder="e.g. Groceries, Salary" />
+                </div>
+                <div class="form-group">
+                    <label>Amount (₹)</label>
+                    <input type="number" id="txAmount" placeholder="e.g. 1500" step="any" />
+                </div>
+                <div class="form-group">
+                    <label>Account</label>
+                    <input type="text" id="txAccount" placeholder="e.g. HDFC Bank, Cash" />
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="txDate" />
+                </div>
+            </div>
+
+            <!-- 2. FIXED DEPOSITS -->
+            <div id="fieldsFD" class="form-section" style="display:none;">
+                <div class="form-group">
+                    <label>Ref / FD Number</label>
+                    <input type="text" id="fdRef" placeholder="e.g. FD100234" />
+                </div>
+                <div class="form-group">
+                    <label>Bank Name</label>
+                    <input type="text" id="fdBank" placeholder="e.g. SBI, ICICI" />
+                </div>
+                <div class="form-group">
+                    <label>Principal Amount (₹)</label>
+                    <input type="number" id="fdPrincipal" placeholder="e.g. 100000" step="any" />
+                </div>
+                <div class="form-group">
+                    <label>Rate (%)</label>
+                    <input type="number" id="fdRate" placeholder="e.g. 7.1" step="0.01" />
+                </div>
+                <div class="form-group">
+                    <label>Start Date</label>
+                    <input type="date" id="fdStartDate" />
+                </div>
+                <div class="form-group">
+                    <label>Maturity Date</label>
+                    <input type="date" id="fdMaturityDate" />
+                </div>
+                <div class="form-group">
+                    <label>Expected Interest (₹)</label>
+                    <input type="number" id="fdExpectedInterest" placeholder="e.g. 7100" step="any" />
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="fdStatus">
+                        <option value="Active">Active</option>
+                        <option value="Matured">Matured</option>
+                        <option value="Closed">Closed</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 3. BUSINESS -->
+            <div id="fieldsBusiness" class="form-section" style="display:none;">
+                <div class="form-group">
+                    <label>Business Name</label>
+                    <input type="text" id="bizName" placeholder="e.g. Coffee Shop, Tech Venture" />
+                </div>
+                <div class="form-group">
+                    <label>Invested Capital (₹)</label>
+                    <input type="number" id="bizCapital" placeholder="e.g. 250000" step="any" />
+                </div>
+                <div class="form-group">
+                    <label>Ownership / Notes</label>
+                    <input type="text" id="bizNotes" placeholder="e.g. 50% Equity, Sleeping Partner" />
+                </div>
+            </div>
+
+            <!-- 4. LOANS -->
+            <div id="fieldsLoans" class="form-section" style="display:none;">
+                <div class="form-group">
+                    <label>Loan Name</label>
+                    <input type="text" id="loanName" placeholder="e.g. Car Loan, Home Loan" />
+                </div>
+                <div class="form-group">
+                    <label>Remaining Principal (₹)</label>
+                    <input type="number" id="loanPrincipal" placeholder="e.g. 500000" step="any" />
+                </div>
+                <div class="form-group">
+                    <label>Interest Rate (%)</label>
+                    <input type="number" id="loanRate" placeholder="e.g. 8.5" step="0.01" />
+                </div>
+                <div class="form-group">
+                    <label>Monthly EMI (₹)</label>
+                    <input type="number" id="loanEMI" placeholder="e.g. 12500" step="any" />
+                </div>
+            </div>
+
+            <!-- 5. STOCKS -->
+            <div id="fieldsStocks" class="form-section" style="display:none;">
+                <div class="form-group">
+                    <label>Stock Symbol / Name</label>
+                    <input type="text" id="stockSymbol" placeholder="e.g. RELIANCE, TCS" />
+                </div>
+                <div class="form-group">
+                    <label>Quantity (Shares)</label>
+                    <input type="number" id="stockShares" placeholder="e.g. 10" oninput="calcStockTotal()" />
+                </div>
+                <div class="form-group">
+                    <label>Price Per Share (₹)</label>
+                    <input type="number" id="stockPrice" placeholder="e.g. 2400" step="any" oninput="calcStockTotal()" />
+                </div>
+                <div class="form-group">
+                    <label>Total Valuation (₹)</label>
+                    <input type="number" id="stockTotal" placeholder="Calculated automatically" readonly style="opacity: 0.7;" />
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="saveBtn">Save Entry</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Bottom Menu Bar -->
+<div class="bottom-nav">
+    <button class="nav-btn active" onclick="switchTab('homeTab', this, '💰 My Finance')">
+        <div class="icon">🏠</div>
+        <span>Home</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('transactionsTab', this, '💸 Transactions')">
+        <div class="icon">💸</div>
+        <span>Transactions</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('fdTab', this, '🏦 Fixed Deposits')">
+        <div class="icon">🏦</div>
+        <span>FD</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('businessTab', this, '🏪 Business')">
+        <div class="icon">🏪</div>
+        <span>Business</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('loansTab', this, '💳 Loans')">
+        <div class="icon">💳</div>
+        <span>Loans</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('stocksTab', this, '📊 Stocks')">
+        <div class="icon">📊</div>
+        <span>Stocks</span>
+    </button>
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwMnH9P5v_lclnpuvHE8YvB_aANppG98QxYLnT2nnJTeYvAABXKaOQsBxJfJtNTSQ26/exec';
+
+let incomeExpenseChartInstance = null;
+let portfolioChartInstance = null;
+
+const formatINR = (val) => {
+    if (val === undefined || val === null || isNaN(val)) return '₹0';
+    const num = Number(val);
+    const isNegative = num < 0;
+    const formatted = new Intl.NumberFormat('en-IN', { 
+        style: 'currency', 
+        currency: 'INR', 
+        maximumFractionDigits: 0 
+    }).format(Math.abs(num));
+    
+    return isNegative ? `-${formatted}` : formatted;
+};
+
+function switchTab(tabId, btnElement, title) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+    
+    document.getElementById(tabId).classList.add('active');
+    btnElement.classList.add('active');
+    document.getElementById('pageTitle').innerText = title;
+}
+
+async function loadData() {
+    const syncIndicator = document.getElementById('syncIndicator');
+    try {
+        const response = await fetch(SCRIPT_URL);
+        const rawData = await response.json();
+
+        // 1. Transactions
+        let totalIncome = 0;
+        let totalExpense = 0;
+        const txListContainer = document.getElementById('transactionList');
+        txListContainer.innerHTML = '';
+
+        const transactions = rawData.transactions || [];
+        if (transactions.length === 0) {
+            txListContainer.innerHTML = '<div class="list-item"><div class="list-item-title">No transactions recorded</div></div>';
+        } else {
+            transactions.forEach(tx => {
+                const inc = Number(tx.Income) || 0;
+                const exp = Number(tx.Expense) || 0;
+                totalIncome += inc;
+                totalExpense += exp;
+
+                const isIncome = inc > 0;
+                const amt = isIncome ? inc : exp;
+                const title = tx.Category || tx.Type || 'Transaction';
+                const date = tx.Date ? new Date(tx.Date).toLocaleDateString('en-IN') : '--';
+                const account = tx.Account || '';
+
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                item.innerHTML = `
+                    <div class="list-item-left">
+                        <div class="list-item-title">${title}</div>
+                        <div class="list-item-sub">${date} • ${account}</div>
                     </div>
-                    <button type="submit" class="btn-submit" style="background-color: var(--accent-pink);">Record Investment</button>
-                </form>
-            </div>
-
-            <div class="table-container">
-                <div class="table-header">Business Investments Registry</div>
-                <table>
-                    <thead>
-                        <tr><th>Venture</th><th>Equity Stake</th><th>Invested Amount</th></tr>
-                    </thead>
-                    <tbody id="bizTableBody">
-                        <tr><td colspan="3" style="text-align:center;">No investments logged</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- SEPARATE LOANS / EMI VIEW -->
-        <section id="loans" class="view-section">
-            <h2 style="margin-bottom: 18px;">Loans & Monthly EMIs</h2>
-
-            <div class="card">
-                <h3 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--accent-orange);">💳 Log Loan / EMI Obligation</h3>
-                <form onsubmit="addLoan(event)">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Loan Provider / Purpose</label>
-                            <input type="text" id="loanName" class="form-control" placeholder="Home Loan / Car Loan" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Monthly EMI Amount (₹)</label>
-                            <input type="number" step="0.01" id="loanEmi" class="form-control" placeholder="15000" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Total Principal Outstanding (₹)</label>
-                            <input type="number" step="0.01" id="loanPrincipal" class="form-control" placeholder="500000">
-                        </div>
+                    <div class="list-item-amount ${isIncome ? 'green' : 'red'}">
+                        ${isIncome ? '+' : '-'}${formatINR(amt)}
                     </div>
-                    <button type="submit" class="btn-submit" style="background-color: var(--accent-orange);">Record Loan Obligation</button>
-                </form>
-            </div>
-
-            <div class="table-container">
-                <div class="table-header">Active Loans & EMIs</div>
-                <table>
-                    <thead>
-                        <tr><th>Loan Title</th><th>Monthly EMI</th><th>Remaining Principal</th></tr>
-                    </thead>
-                    
-                    
-                    <tbody id="loanTableBody">
-                        <tr><td colspan="3" style="text-align:center;">No active loans logged</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-    </main>
-
-    <script>
-        const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbwMnH9P5v_lclnpuvHE8YvB_aANppG98QxYLnT2nnJTeYvAABXKaOQsBxJfJtNTSQ26/exec";
-
-        const activeStocks = [
-            { isType: "Stock", symbol: "AAPL", type: "Equity", shares: 15, price: 185.50, totalValue: 2782.50, broker: "Broker A", date: "2024-01-15" },
-            { isType: "Stock", symbol: "NVDA", type: "Equity", shares: 10, price: 120.25, totalValue: 1202.50, broker: "Broker A", date: "2024-02-10" },
-            { isType: "Stock", symbol: "MSFT", type: "Equity", shares: 8,  price: 420.00, totalValue: 3360.00, broker: "Broker B", date: "2024-03-01" },
-            { isType: "Stock", symbol: "AMZN", type: "Equity", shares: 12, price: 180.00, totalValue: 2160.00, broker: "Broker B", date: "2024-03-20" }
-        ];
-
-        const defaultFDs = [
-            { ref: "FD-101", bank: "HDFC Bank", principal: 50000, rate: 7.2, startDate: "2025-01-10", maturityDate: "2026-01-10", expectedInterest: 3600, status: "Active" },
-            { ref: "FD-102", bank: "ICICI Bank", principal: 40000, rate: 7.1, startDate: "2025-03-15", maturityDate: "2026-03-15", expectedInterest: 2840, status: "Active" }
-        ];
-
-        const defaultBiz = [
-            { name: "Alpha Startup", amount: 150000, equity: 10 }
-        ];
-
-        const defaultLoans = [
-            { name: "Car Loan", emi: 12500, principal: 350000 }
-        ];
-
-        let cachedStocks = JSON.parse(localStorage.getItem('myfin_stocks') || '[]');
-        if (!Array.isArray(cachedStocks) || cachedStocks.length === 0) {
-            cachedStocks = activeStocks;
-            localStorage.setItem('myfin_stocks', JSON.stringify(activeStocks));
+                `;
+                txListContainer.appendChild(item);
+            });
         }
 
-        let store = {
-            transactions: JSON.parse(localStorage.getItem('myfin_txns') || '[]'),
-            fds: JSON.parse(localStorage.getItem('myfin_fds') || JSON.stringify(defaultFDs)),
-            stocks: cachedStocks,
-            business: JSON.parse(localStorage.getItem('myfin_biz') || JSON.stringify(defaultBiz)),
-            loans: JSON.parse(localStorage.getItem('myfin_loans') || JSON.stringify(defaultLoans))
-        };
+        const liquidBalance = totalIncome - totalExpense;
+        const netSavings = totalIncome - totalExpense;
 
-        let growthChartInstance = null;
-        let circleChartInstance = null;
+        // 2. Fixed Deposits
+        let totalFD = 0;
+        const fdListContainer = document.getElementById('fdList');
+        fdListContainer.innerHTML = '';
+        const fds = rawData.fixedDeposits || [];
+        fds.forEach(r => {
+            const val = Number(r["Principal"]) || 0;
+            totalFD += val;
+            
+            const ref = r.Ref ? `Ref: ${r.Ref} • ` : '';
+            const status = r.Status || 'Active';
+            const matDate = r["Maturity Date"] ? new Date(r["Maturity Date"]).toLocaleDateString('en-IN') : '';
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('txnDate').value = today;
-            document.getElementById('fdDate').value = today;
-            document.getElementById('stkDate').value = today;
-            renderAll();
-            fetchSheetData();
+            const item = document.createElement('div');
+            item.className = 'list-item';
+            item.innerHTML = `
+                <div class="list-item-left">
+                    <div class="list-item-title">${r.Bank || 'Fixed Deposit'} (${status})</div>
+                    <div class="list-item-sub">${ref}Rate: ${r.Rate || 0}% ${matDate ? '• Mat: ' + matDate : ''}</div>
+                </div>
+                <div class="list-item-amount purple">
+                    ${formatINR(val)}
+                    <div style="font-size: 11px; font-weight: normal; color: #22c55e;">+${formatINR(r["Expected Interest"] || 0)} Exp.</div>
+                </div>
+            `;
+            fdListContainer.appendChild(item);
         });
 
-        function toggleMenu() {
-            const sidebar = document.getElementById('sidebar');
-            if (window.innerWidth <= 768) {
-                sidebar.classList.toggle('active-mobile');
-            } else {
-                sidebar.classList.toggle('collapsed');
-                document.getElementById('mainContent').classList.toggle('expanded');
+        // 3. Business
+        let totalBusiness = 0;
+        const businessListContainer = document.getElementById('businessList');
+        businessListContainer.innerHTML = '';
+        const business = rawData.business || [];
+        business.forEach(r => {
+            const val = Number(r["Invested Capital"]) || 0;
+            totalBusiness += val;
+
+            const item = document.createElement('div');
+            item.className = 'list-item';
+            item.innerHTML = `
+                <div class="list-item-left">
+                    <div class="list-item-title">${r["Business Name"] || 'Business'}</div>
+                    <div class="list-item-sub">Ownership: ${r["Ownership / Notes"] || '-'}</div>
+                </div>
+                <div class="list-item-amount orange">${formatINR(val)}</div>
+            `;
+            businessListContainer.appendChild(item);
+        });
+
+        // 4. Loans & Monthly EMI
+        let totalLoans = 0;
+        let totalMonthlyEMI = 0;
+        const loanListContainer = document.getElementById('loansList');
+        loanListContainer.innerHTML = '';
+        const loans = rawData.loans || [];
+        loans.forEach(r => {
+            const val = Number(r["Remaining Principal"]) || 0;
+            const emi = Number(r["Monthly EMI"]) || 0;
+            totalLoans += val;
+            totalMonthlyEMI += emi;
+
+            const rate = r["Interest Rate (%)"] ? ` • ${r["Interest Rate (%)"]}% APR` : '';
+
+            const item = document.createElement('div');
+            item.className = 'list-item';
+            item.innerHTML = `
+                <div class="list-item-left">
+                    <div class="list-item-title">${r["Loan Name"] || 'Loan'}</div>
+                    <div class="list-item-sub">EMI: ${formatINR(emi)}${rate}</div>
+                </div>
+                <div class="list-item-amount red">${formatINR(val)}</div>
+            `;
+            loanListContainer.appendChild(item);
+        });
+
+        // 5. Stocks
+        let totalStocks = 0;
+        const stocksListContainer = document.getElementById('stocksList');
+        stocksListContainer.innerHTML = '';
+        const stocks = rawData.stocks || [];
+        stocks.forEach(r => {
+            const val = Number(r["Total Value"]) || 0;
+            totalStocks += val;
+
+            const item = document.createElement('div');
+            item.className = 'list-item';
+            item.innerHTML = `
+                <div class="list-item-left">
+                    <div class="list-item-title">${r.Symbol || 'Stock'}</div>
+                    <div class="list-item-sub">Qty: ${r.Shares || 0} @ ${formatINR(r.Price || 0)}</div>
+                </div>
+                <div class="list-item-amount blue">${formatINR(val)}</div>
+            `;
+            stocksListContainer.appendChild(item);
+        });
+
+        // Net Worth
+        const totalAssets = liquidBalance + totalFD + totalBusiness + totalStocks;
+        const netWorth = totalAssets - totalLoans;
+
+        // Summary Values
+        document.getElementById('netWorth').innerText = formatINR(netWorth);
+        document.getElementById('income').innerText = formatINR(totalIncome);
+        document.getElementById('expense').innerText = formatINR(totalExpense);
+        document.getElementById('savings').innerText = formatINR(netSavings);
+        document.getElementById('balance').innerText = formatINR(liquidBalance);
+
+        // Home Cards
+        document.getElementById('fdHome').innerText = formatINR(totalFD);
+        document.getElementById('businessHome').innerText = formatINR(totalBusiness);
+        document.getElementById('loanHome').innerText = formatINR(totalLoans);
+        document.getElementById('stocksHome').innerText = formatINR(totalStocks);
+
+        // Sub-Tab Header Totals
+        document.getElementById('fdVal').innerText = formatINR(totalFD);
+        document.getElementById('fdCount').innerText = `${fds.length} Active Records`;
+
+        document.getElementById('businessVal').innerText = formatINR(totalBusiness);
+        document.getElementById('businessCount').innerText = `${business.length} Investments`;
+
+        document.getElementById('loanVal').innerText = formatINR(totalLoans);
+        document.getElementById('loanEmiVal').innerText = formatINR(totalMonthlyEMI);
+        document.getElementById('loanCount').innerText = `${loans.length} Accounts`;
+
+        document.getElementById('stocksVal').innerText = formatINR(totalStocks);
+        document.getElementById('stocksCount').innerText = `${stocks.length} Holdings`;
+
+        // Render Visual Charts
+        renderCharts(liquidBalance, totalFD, totalBusiness, totalStocks, totalIncome, totalExpense);
+
+        syncIndicator.style.color = '#22c55e';
+        syncIndicator.innerText = '● Live';
+
+    } catch (err) {
+        console.error('Failed to fetch data:', err);
+        syncIndicator.style.color = '#ef4444';
+        syncIndicator.innerText = '● Sync Error';
+    }
+}
+
+// Render Charts
+function renderCharts(liquid, fd, business, stocks, income, expense) {
+    // 1. Income vs Expense Bar Chart
+    const ctxIncExp = document.getElementById('incomeExpenseChart').getContext('2d');
+    if (incomeExpenseChartInstance) incomeExpenseChartInstance.destroy();
+
+    incomeExpenseChartInstance = new Chart(ctxIncExp, {
+        type: 'bar',
+        data: {
+            labels: ['Flow'],
+            datasets: [
+                { label: 'Income', data: [income], backgroundColor: '#22c55e', borderRadius: 8 },
+                { label: 'Expense', data: [expense], backgroundColor: '#ef4444', borderRadius: 8 }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+                y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }
+            },
+            plugins: {
+                legend: { position: 'bottom', labels: { color: '#94a3b8', boxWidth: 12, font: { size: 11 } } }
             }
         }
+    });
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+    // 2. Portfolio Allocation Doughnut Chart
+    const ctxPortfolio = document.getElementById('portfolioChart').getContext('2d');
+    if (portfolioChartInstance) portfolioChartInstance.destroy();
 
-            document.getElementById(tabId).classList.add('active');
-            document.getElementById(`nav-${tabId}`).classList.add('active');
-
-            if (window.innerWidth <= 768) {
-                document.getElementById('sidebar').classList.remove('active-mobile');
+    portfolioChartInstance = new Chart(ctxPortfolio, {
+        type: 'doughnut',
+        data: {
+            labels: ['Liquid Cash', 'Fixed Deposits', 'Business', 'Stocks'],
+            datasets: [{
+                data: [Math.max(0, liquid), fd, business, stocks],
+                backgroundColor: ['#38bdf8', '#a78bfa', '#f97316', '#22c55e'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { color: '#94a3b8', boxWidth: 12, font: { size: 11 } } }
             }
         }
+    });
+}
+
+// Modal Toggle Functions
+function openModal() {
+    document.getElementById('inputModal').classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('inputModal').classList.remove('active');
+}
+
+function toggleFormFields() {
+    const selected = document.getElementById('entryType').value;
+    
+    document.getElementById('fieldsTransactions').style.display = selected === 'Transactions' ? 'block' : 'none';
+    document.getElementById('fieldsFD').style.display = selected === 'Fixed Deposits' ? 'block' : 'none';
+    document.getElementById('fieldsBusiness').style.display = selected === 'Business' ? 'block' : 'none';
+    document.getElementById('fieldsLoans').style.display = selected === 'Loans' ? 'block' : 'none';
+    document.getElementById('fieldsStocks').style.display = selected === 'Stocks' ? 'block' : 'none';
+}
+
+function calcStockTotal() {
+    const shares = Number(document.getElementById('stockShares').value) || 0;
+    const price = Number(document.getElementById('stockPrice').value) || 0;
+    document.getElementById('stockTotal').value = shares * price;
+}
+
+// Submit Data to Google Apps Script
+async function submitData(e) {
+    e.preventDefault();
+    const saveBtn = document.getElementById('saveBtn');
+    saveBtn.innerText = 'Saving...';
+    saveBtn.disabled = true;
+
+    const sheetName = document.getElementById('entryType').value;
+    let rowData = {};
+
+    if (sheetName === 'Transactions') {
+        const type = document.getElementById('txType').value;
+        const amt = Number(document.getElementById('txAmount').value) || 0;
+        rowData = {
+            Date: document.getElementById('txDate').value,
+            Category: document.getElementById('txCategory').value,
+            Account: document.getElementById('txAccount').value,
+            Income: type === 'Income' ? amt : 0,
+            Expense: type === 'Expense' ? amt : 0
+        };
+    } else if (sheetName === 'Fixed Deposits') {
+        rowData = {
+            Ref: document.getElementById('fdRef').value,
+            Bank: document.getElementById('fdBank').value,
+            Principal: Number(document.getElementById('fdPrincipal').value) || 0,
+            Rate: Number(document.getElementById('fdRate').value) || 0,
+            "Start Date": document.getElementById('fdStartDate').value,
+            "Maturity Date": document.getElementById('fdMaturityDate').value,
+            "Expected Interest": Number(document.getElementById('fdExpectedInterest').value) || 0,
+            Status: document.getElementById('fdStatus').value
+        };
+    } else if (sheetName === 'Business') {
+        rowData = {
+            "Business Name": document.getElementById('bizName').value,
+            "Invested Capital": Number(document.getElementById('bizCapital').value) || 0,
+            "Ownership / Notes": document.getElementById('bizNotes').value
+        };
+    } else if (sheetName === 'Loans') {
+        rowData = {
+            "Loan Name": document.getElementById('loanName').value,
+            "Remaining Principal": Number(document.getElementById('loanPrincipal').value) || 0,
+            "Interest Rate (%)": Number(document.getElementById('loanRate').value) || 0,
+            "Monthly EMI": Number(document.getElementById('loanEMI').value) || 0
+        };
+    } else if (sheetName === 'Stocks') {
+        rowData = {
+            Symbol: document.getElementById('stockSymbol').value,
+            Shares: Number(document.getElementById('stockShares').value) || 0,
+            Price: Number(document.getElementById('stockPrice').value) || 0,
+            "Total Value": Number(document.getElementById('stockTotal').value) || 0
+        };
+    }
+
+    try {
+        await fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sheet: sheetName, row: rowData })
+        });
+
+        closeModal();
+        document.getElementById('addForm').reset();
+        document.getElementById('txDate').valueAsDate = new Date();
+        toggleFormFields();
+
+        // Refresh dashboard data
+        setTimeout(loadData, 1500);
+    } catch (err) {
+        alert('Error saving data: ' + err.message);
+    } finally {
+        saveBtn.innerText = 'Save Entry';
+        saveBtn.disabled = false;
+    }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('txDate').valueAsDate = new Date();
+    loadData();
+    setInterval(loadData, 30000);
+});
+</script>
 
-        function fmt(num) {
-            return '₹' + Number(num || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-
-        function formatDate(dateStr) {
-            if (!dateStr || dateStr === '-') return '-';
-            try {
-                const d = new Date(dateStr);
-                return isNaN(d.getTime()) ? String(dateStr).split('T')[0] : d.toISOString().split('T')[0];
-            } catch (e) {
-                return dateStr;
-            }
-        }
-
-        // ACCURATE TRANSACTION TYPE & AMOUNT CALCULATION
-        function getTxnInfo(t) {
-            let amount = 0;
-            let type = 'Expense';
-
-            if (t.type && typeof t.type === 'string') {
-                type = t.type;
-            } else if (Number(t.income) > 0) {
-                type = 'Income';
-            } else if (Number(t.expense) > 0) {
-                type = 'Expense';
-            }
-
-            if (t.amount !== undefined && t.amount !== null && !isNaN(Number(t.amount))) {
-                amount = Math.abs(Number(t.amount));
-            } else if (type === 'Income') {
-                amount = parseFloat(String(t.income || 0).replace(/[^0-9.-]/g, '')) || 0;
-            } else {
-                amount = parseFloat(String(t.expense || 0).replace(/[^0-9.-]/g, '')) || 0;
-            }
-
-            return { type, amount };
-        }
-
-        function getFDProps(f) {
-            const ref = f.ref || f.Ref || f.id || f.ID || '-';
-            const bank = f.bank || f.Bank || f.RefBank || f.refBank || 'FD Account';
-            const principal = parseFloat(String(f.principal || f.Principal || f.amount || f.Amount || 0).replace(/[^0-9.-]/g, '')) || 0;
-            const rate = parseFloat(String(f.rate || f.Rate || 0).replace(/[^0-9.-]/g, '')) || 0;
-            const startDate = formatDate(f.startDate || f['Start Date'] || f.start_date || f.date);
-            const maturityDate = formatDate(f.maturityDate || f['Maturity Date'] || f.maturity_date);
-            
-            const rawExpectedInterest = f.expectedInterest ?? f['Expected Interest'] ?? f.expected_interest ?? f.interest ?? f.Interest;
-            let expectedInterest = parseFloat(String(rawExpectedInterest || 0).replace(/[^0-9.-]/g, '')) || 0;
-            
-            if (!expectedInterest && principal && rate && f.tenure) {
-                const comp = computeFD(principal, rate, f.tenure);
-                expectedInterest = comp.interest;
-            }
-
-            const status = f.status || f.Status || 'Active';
-
-            return { ref, bank, principal, rate, startDate, maturityDate, expectedInterest, status };
-        }
-
-        function getStockProps(s) {
-            const isType = s.isType || s.IS || s['IS'] || s.is || 'Stock';
-            const symbol = String(s.symbol || s.Symbol || s.ticker || s.name || 'UNKNOWN').toUpperCase();
-            const type = s.type || s.Type || 'Equity';
-            
-            const rawShares = s.shares ?? s.Shares ?? s.qty ?? s.quantity ?? s.count ?? 0;
-            const shares = parseFloat(String(rawShares).replace(/[^0-9.-]/g, '')) || 0;
-
-            const rawPrice = s.price ?? s.Price ?? s.currPrice ?? s.buyPrice ?? s.cmp ?? 0;
-            const price = parseFloat(String(rawPrice).replace(/[^0-9.-]/g, '')) || 0;
-
-            const rawTotalVal = s.totalValue ?? s['Total Value'] ?? s.total_value ?? (shares * price);
-            const totalValue = parseFloat(String(rawTotalVal).replace(/[^0-9.-]/g, '')) || (shares * price);
-
-            const broker = s.broker || s.Broker || '-';
-            const date = formatDate(s.date || s.Date || s.purchase_date);
-
-            return { isType, symbol, type, shares, price, totalValue, broker, date };
-        }
-
-        function resetStocksToDefault() {
-            store.stocks = activeStocks;
-            localStorage.setItem('myfin_stocks', JSON.stringify(activeStocks));
-            renderAll();
-        }
-
-        function computeFD(principal, rate, months) {
-            const p = parseFloat(principal) || 0;
-            const r = parseFloat(rate) || 0;
-            const m = parseFloat(months) || 0;
-            if (!p || !r || !m) return { interest: 0, maturity: 0 };
-
-            const t = m / 12;
-            const n = 4;
-            const maturity = p * Math.pow((1 + (r / 100) / n), n * t);
-            const interest = maturity - p;
-
-            return { interest, maturity };
-        }
-
-        function calcFDPreview() {
-            const p = document.getElementById('fdAmount').value;
-            const r = document.getElementById('fdRate').value;
-            const m = document.getElementById('fdTenure').value;
-
-            const res = computeFD(p, r, m);
-            document.getElementById('prevInterest').innerText = fmt(res.interest);
-            document.getElementById('prevMaturity').innerText = fmt(res.maturity);
-        }
-
-        async function fetchSheetData() {
-            if (!GOOGLE_SHEET_URL) return;
-            const syncBadge = document.getElementById('syncStatus');
-            try {
-                syncBadge.innerText = 'Syncing...';
-                syncBadge.style.color = '#3b82f6';
-
-                const res = await fetch(GOOGLE_SHEET_URL, { redirect: "follow" });
-                const data = await res.json();
-
-                if (data.status === "success" || data.transactions || data.stocks || data.fds) {
-                    if (data.transactions && Array.isArray(data.transactions)) {
-                        store.transactions = data.transactions;
-                        localStorage.setItem('myfin_txns', JSON.stringify(store.transactions));
-                    }
-                    if (data.stocks && Array.isArray(data.stocks) && data.stocks.length > 0) {
-                        store.stocks = data.stocks;
-                        localStorage.setItem('myfin_stocks', JSON.stringify(store.stocks));
-                    }
-                    if (data.fds && Array.isArray(data.fds) && data.fds.length > 0) {
-                        store.fds = data.fds;
-                        localStorage.setItem('myfin_fds', JSON.stringify(store.fds));
-                    }
-                    renderAll();
-                    syncBadge.innerText = 'Synced';
-                    syncBadge.style.color = '#10b981';
-                }
-            } catch (err) {
-                console.error("Sheet sync error:", err);
-                syncBadge.innerText = 'Offline Mode';
-                syncBadge.style.color = '#ef4444';
-            }
-        }
-
-        async function addTransaction(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnSubmitTxn');
-            btn.innerText = 'Saving...';
-            btn.disabled = true;
-
-            const typeVal = document.getElementById('txnType').value;
-            const amountVal = parseFloat(document.getElementById('txnAmount').value) || 0;
-
-            const payload = {
-                action: "addTransaction",
-                id: 'TXN-' + Math.floor(10000 + Math.random() * 90000),
-                date: document.getElementById('txnDate').value,
-                type: typeVal,
-                category: document.getElementById('txnCategory').value,
-                account: document.getElementById('txnAccount').value,
-                amount: amountVal,
-                income: typeVal === 'Income' ? amountVal : 0,
-                expense: typeVal === 'Expense' ? amountVal : 0
-            };
-
-            store.transactions.unshift(payload);
-            localStorage.setItem('myfin_txns', JSON.stringify(store.transactions));
-            renderAll();
-
-            try {
-                await fetch(GOOGLE_SHEET_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-            } catch (err) {
-                console.error("Txn sync fail", err);
-            } finally {
-                btn.innerText = 'Save Transaction';
-                btn.disabled = false;
-                e.target.reset();
-                document.getElementById('txnDate').value = new Date().toISOString().split('T')[0];
-            }
-        }
-
-        async function addFD(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnSubmitFD');
-            btn.innerText = 'Saving...';
-            btn.disabled = true;
-
-            const principal = parseFloat(document.getElementById('fdAmount').value) || 0;
-            const rate = parseFloat(document.getElementById('fdRate').value) || 0;
-            const tenure = parseFloat(document.getElementById('fdTenure').value) || 0;
-            const startDate = document.getElementById('fdDate').value;
-
-            const comp = computeFD(principal, rate, tenure);
-
-            let matDate = new Date(startDate);
-            matDate.setMonth(matDate.getMonth() + tenure);
-
-            const payload = {
-                action: "addFD",
-                ref: document.getElementById('fdRef').value || ('FD-' + Math.floor(100 + Math.random() * 900)),
-                bank: document.getElementById('fdBank').value,
-                principal: principal,
-                rate: rate,
-                tenure: tenure,
-                startDate: startDate,
-                maturityDate: matDate.toISOString().split('T')[0],
-                expectedInterest: comp.interest,
-                status: 'Active'
-            };
-
-            store.fds.unshift(payload);
-            localStorage.setItem('myfin_fds', JSON.stringify(store.fds));
-            renderAll();
-
-            try {
-                await fetch(GOOGLE_SHEET_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-            } catch (err) {
-                console.error("FD sync fail", err);
-            } finally {
-                btn.innerText = 'Save Fixed Deposit';
-                btn.disabled = false;
-                e.target.reset();
-                document.getElementById('fdDate').value = new Date().toISOString().split('T')[0];
-                calcFDPreview();
-            }
-        }
-
-        async function addStock(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnSubmitStock');
-            btn.innerText = 'Saving...';
-            btn.disabled = true;
-
-            const shares = parseFloat(document.getElementById('stkShares').value) || 0;
-            const price = parseFloat(document.getElementById('stkPrice').value) || 0;
-
-            const payload = {
-                action: "addStock",
-                isType: document.getElementById('stkIs').value || 'Stock',
-                symbol: document.getElementById('stkSymbol').value.toUpperCase(),
-                type: document.getElementById('stkType').value || 'Equity',
-                shares: shares,
-                price: price,
-                totalValue: shares * price,
-                broker: document.getElementById('stkBroker').value || '-',
-                date: document.getElementById('stkDate').value || new Date().toISOString().split('T')[0]
-            };
-
-            store.stocks.unshift(payload);
-            localStorage.setItem('myfin_stocks', JSON.stringify(store.stocks));
-            renderAll();
-
-            try {
-                await fetch(GOOGLE_SHEET_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-            } catch (err) {
-                console.error("Stock sync fail", err);
-            } finally {
-                btn.innerText = 'Add Stock Holding';
-                btn.disabled = false;
-                e.target.reset();
-                document.getElementById('stkDate').value = new Date().toISOString().split('T')[0];
-                document.getElementById('stkIs').value = 'Stock';
-                document.getElementById('stkType').value = 'Equity';
-            }
-        }
-
-        function addBusinessInvest(e) {
-            e.preventDefault();
-            const item = {
-                name: document.getElementById('bizName').value,
-                amount: parseFloat(document.getElementById('bizAmount').value) || 0,
-                equity: parseFloat(document.getElementById('bizEquity').value) || 0
-            };
-            store.business.unshift(item);
-            localStorage.setItem('myfin_biz', JSON.stringify(store.business));
-            renderAll();
-            e.target.reset();
-        }
-
-        function addLoan(e) {
-            e.preventDefault();
-            const item = {
-                name: document.getElementById('loanName').value,
-                emi: parseFloat(document.getElementById('loanEmi').value) || 0,
-                principal: parseFloat(document.getElementById('loanPrincipal').value) || 0
-            };
-            store.loans.unshift(item);
-            localStorage.setItem('myfin_loans', JSON.stringify(store.loans));
-            renderAll();
-            e.target.reset();
-        }
-
-        function renderAll() {
-            renderTransactions();
-            renderFDs();
-            renderStocks();
-            renderBusiness();
-            renderLoans();
-            renderDashboard();
-        }
-
-        function renderTransactions() {
-            const tbody = document.getElementById('fullTransactionTableBody');
-            if (store.transactions.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No transactions logged</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = store.transactions.map((t) => {
-                const info = getTxnInfo(t);
-                const badgeClass = info.type === 'Income' ? 'badge-income' : 'badge-expense';
-                return `
-                    <tr>
-                        <td data-label="Date">${formatDate(t.date)}</td>
-                        <td data-label="Type"><span class="badge ${badgeClass}">${info.type}</span></td>
-                        <td data-label="Category">${t.category || '-'}</td>
-                        <td data-label="Account">${t.account || '-'}</td>
-                        <td data-label="Amount" style="font-weight:bold; color: ${info.type === 'Income' ? 'var(--accent-green)' : 'var(--accent-red)'}">${fmt(info.amount)}</td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function renderFDs() {
-            const tbody = document.getElementById('fdTableBody');
-            if (store.fds.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No Fixed Deposits logged</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = store.fds.map(f => {
-                const p = getFDProps(f);
-                return `
-                    <tr>
-                        <td data-label="Bank"><strong>${p.bank}</strong></td>
-                        <td data-label="Principal">${fmt(p.principal)}</td>
-                        <td data-label="Maturity">${p.maturityDate}</td>
-                        <td data-label="Interest" style="color:var(--accent-cyan); font-weight:bold;">${fmt(p.expectedInterest)}</td>
-                        <td data-label="Status"><span class="badge ${p.status === 'Active' ? 'badge-active' : 'badge-matured'}">${p.status}</span></td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function renderStocks() {
-            const tbody = document.getElementById('stocksTableBody');
-            if (store.stocks.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No stock holdings logged</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = store.stocks.map(s => {
-                const sp = getStockProps(s);
-                return `
-                    <tr>
-                        <td data-label="Symbol"><strong>${sp.symbol}</strong></td>
-                        <td data-label="Shares">${sp.shares}</td>
-                        <td data-label="Price">${fmt(sp.price)}</td>
-                        <td data-label="Total Value" style="color:var(--accent-green); font-weight:bold;">${fmt(sp.totalValue)}</td>
-                        <td data-label="Broker">${sp.broker}</td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function renderBusiness() {
-            const bizTbody = document.getElementById('bizTableBody');
-            if (store.business.length === 0) {
-                bizTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No business investments logged</td></tr>';
-            } else {
-                bizTbody.innerHTML = store.business.map(b => `
-                    <tr>
-                        <td data-label="Venture"><strong>${b.name}</strong></td>
-                        <td data-label="Equity Stake">${b.equity ? b.equity + '%' : '-'}</td>
-                        <td data-label="Invested Amount" style="color:var(--accent-pink); font-weight:bold;">${fmt(b.amount)}</td>
-                    </tr>
-                `).join('');
-            }
-        }
-
-        function renderLoans() {
-            const loanTbody = document.getElementById('loanTableBody');
-            if (store.loans.length === 0) {
-                loanTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No active loans logged</td></tr>';
-            } else {
-                loanTbody.innerHTML = store.loans.map(l => `
-                    <tr>
-                        <td data-label="Loan Title"><strong>${l.name}</strong></td>
-                        <td data-label="Monthly EMI" style="color:var(--accent-orange); font-weight:bold;">${fmt(l.emi)}</td>
-                        <td data-label="Principal Left">${fmt(l.principal)}</td>
-                    </tr>
-                `).join('');
-            }
-        }
-
-        function renderDashboard() {
-            let totalIncome = 0;
-            let totalExpense = 0;
-
-            store.transactions.forEach(t => {
-                const info = getTxnInfo(t);
-                if (info.type === 'Income') totalIncome += info.amount;
-                else totalExpense += info.amount;
-            });
-
-            const liquidBalance = totalIncome - totalExpense;
-
-            let fdCapital = 0;
-            let fdInterest = 0;
-            store.fds.forEach(f => {
-                const p = getFDProps(f);
-                if (p.status === 'Active') {
-                    fdCapital += p.principal;
-                    fdInterest += p.expectedInterest;
-                }
-            });
-
-            let stockValue = 0;
-            store.stocks.forEach(s => {
-                const sp = getStockProps(s);
-                stockValue += sp.totalValue;
-            });
-
-            let bizValue = store.business.reduce((acc, b) => acc + (Number(b.amount) || 0), 0);
-            let totalEmi = store.loans.reduce((acc, l) => acc + (Number(l.emi) || 0), 0);
-
-            const netWorth = (liquidBalance + fdCapital + stockValue + bizValue);
-
-            document.getElementById('dashNetWorth').innerText = fmt(netWorth);
-            document.getElementById('dashTotalBalance').innerText = fmt(liquidBalance);
-            document.getElementById('dashTotalExpense').innerText = fmt(totalExpense);
-            document.getElementById('dashTotalBiz').innerText = fmt(bizValue);
-            document.getElementById('dashTotalEMI').innerText = fmt(totalEmi);
-            document.getElementById('dashTotalFD').innerText = fmt(fdCapital);
-            document.getElementById('dashFDInterest').innerText = fmt(fdInterest);
-            document.getElementById('dashTotalStocks').innerText = fmt(stockValue);
-
-            renderCharts(liquidBalance, fdCapital, stockValue, bizValue);
-        }
-
-        function renderCharts(balance, fd, stocks, biz) {
-            const growthCtx = document.getElementById('growthChart').getContext('2d');
-            if (growthChartInstance) growthChartInstance.destroy();
-
-            const totalAllocated = Math.max(0, balance) + fd + stocks + biz;
-
-            growthChartInstance = new Chart(growthCtx, {
-                type: 'line',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Current'],
-                    datasets: [{
-                        label: 'Portfolio Value',
-                        data: [
-                            totalAllocated * 0.7,
-                            totalAllocated * 0.78,
-                            totalAllocated * 0.85,
-                            totalAllocated * 0.9,
-                            totalAllocated * 0.95,
-                            totalAllocated
-                        ],
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        fill: true,
-                        tension: 0.3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
-                        y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }
-                    }
-                }
-            });
-
-            const circleCtx = document.getElementById('circleChart').getContext('2d');
-            if (circleChartInstance) circleChartInstance.destroy();
-
-            circleChartInstance = new Chart(circleCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Liquid Balance', 'Fixed Deposits', 'Stocks', 'Business Invest'],
-                    datasets: [{
-                        data: [Math.max(0, balance), fd, stocks, biz],
-                        backgroundColor: ['#3b82f6', '#8b5cf6', '#10b981', '#ec4899'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { color: '#f8fafc', font: { size: 11 } } }
-                    }
-                }
-            });
-        }
-    </script>
 </body>
 </html>
