@@ -987,7 +987,7 @@ async function loadData() {
     }
 }
 
-/// Render Charts
+// Render Charts
 function renderCharts(liquid, fd, business, stocks, income, expense) {
     // 1. Income vs Expense Line Graph Chart
     const ctxIncExp = document.getElementById('incomeExpenseChart').getContext('2d');
@@ -1034,30 +1034,6 @@ function renderCharts(liquid, fd, business, stocks, income, expense) {
             }
         }
     });
-
-    // 2. Portfolio Allocation Doughnut Chart
-    const ctxPortfolio = document.getElementById('portfolioChart').getContext('2d');
-    if (portfolioChartInstance) portfolioChartInstance.destroy();
-
-    portfolioChartInstance = new Chart(ctxPortfolio, {
-        type: 'doughnut',
-        data: {
-            labels: ['Liquid Cash', 'Fixed Deposits', 'Business', 'Stocks'],
-            datasets: [{
-                data: [Math.max(0, liquid), fd, business, stocks],
-                backgroundColor: ['#38bdf8', '#a78bfa', '#f97316', '#22c55e'],
-                borderWidth: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'bottom', labels: { color: '#94a3b8', boxWidth: 12, font: { size: 11 } } }
-            }
-        }
-    });
-}
 
     // 2. Portfolio Allocation Doughnut Chart
     const ctxPortfolio = document.getElementById('portfolioChart').getContext('2d');
