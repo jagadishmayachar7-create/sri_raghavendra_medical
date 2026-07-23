@@ -190,6 +190,33 @@ body{
     text-align: right;
 }
 
+/* To-Do Specific Styles */
+.todo-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.todo-checkbox {
+    width: 20px;
+    height: 20px;
+    accent-color: #38bdf8;
+    cursor: pointer;
+}
+
+.todo-text.completed {
+    text-decoration: line-through;
+    color: #64748b;
+}
+
+.todo-delete-btn {
+    background: none;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    font-size: 16px;
+}
+
 /* Bottom Nav Menu */
 .bottom-nav{
     position:fixed;
@@ -486,6 +513,18 @@ body{
         <div id="stocksList"></div>
     </div>
 
+    <!-- 7. TO DO LIST TAB -->
+    <div id="todoTab" class="tab-content">
+        <div class="section-title">Tasks & Reminders</div>
+        <div class="detail-card">
+            <div class="card-label">Pending Tasks</div>
+            <div class="main-val blue" id="todoCount">0 Active</div>
+            <div class="sub" id="todoCompletedCount">0 Completed</div>
+        </div>
+        <div class="section-title">To Do Items</div>
+        <div id="todoList"></div>
+    </div>
+
 </div>
 
 <!-- Floating Action Add Button -->
@@ -504,6 +543,7 @@ body{
                 <option value="Business">🏪 Business Investment</option>
                 <option value="Loans">💳 Loan / Liability</option>
                 <option value="Stocks">📊 Stock / Equity</option>
+                <option value="To Do List">✅ To Do Task</option>
             </select>
         </div>
 
@@ -632,6 +672,30 @@ body{
                 </div>
             </div>
 
+            <!-- 6. TO DO LIST -->
+            <div id="fieldsTodo" class="form-section" style="display:none;">
+                <div class="form-group">
+                    <label>Task Description</label>
+                    <input type="text" id="todoTask" placeholder="e.g. Pay Credit Card Bill" />
+                </div>
+                <div class="form-group">
+                    <label>Amount (₹)</label>
+                    <input type="number" id="todoAmount" placeholder="e.g. 2500" step="any" />
+                </div>
+                <div class="form-group">
+                    <label>Due Date</label>
+                    <input type="date" id="todoDueDate" />
+                </div>
+                <div class="form-group">
+                    <label>Priority</label>
+                    <select id="todoPriority">
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                        <option value="Low">Low</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="modal-actions">
                 <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
                 <button type="submit" class="btn btn-primary" id="saveBtn">Save Entry</button>
@@ -665,6 +729,10 @@ body{
     <button class="nav-btn" onclick="switchTab('stocksTab', this, '📊 Stocks')">
         <div class="icon">📊</div>
         <span>Stocks</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('todoTab', this, '✅ To Do List')">
+        <div class="icon">✅</div>
+        <span>To Do</span>
     </button>
 </div>
 
@@ -838,6 +906,43 @@ async function loadData() {
             stocksListContainer.appendChild(item);
         });
 
+        // 6. To Do List
+        const todoListContainer = document.getElementById('todoList');
+        todoListContainer.innerHTML = '';
+        const todos = rawData.todoList || [];
+        let pendingCount = 0;
+        let completedCount = 0;
+
+        todos.forEach((r, idx) => {
+            const task = r["Task"] || 'Task';
+            const isDone = r["Status"] === 'Completed';
+            const dueDate = r["Due Date"] ? new Date(r["Due Date"]).toLocaleDateString('en-IN') : '--';
+            const priority = r["Priority"] || 'Medium';
+            const amount = Number(r["Amount"]) || 0;
+
+            if (isDone) completedCount++;
+            else pendingCount++;
+
+            const item = document.createElement('div');
+            item.className = 'list-item';
+            item.innerHTML = `
+                <div class="todo-item">
+                    <input type="checkbox" class="todo-checkbox" ${isDone ? 'checked' : ''} onchange="toggleTodoStatus(${idx}, this.checked)">
+                    <div class="list-item-left">
+                        <div class="list-item-title todo-text ${isDone ? 'completed' : ''}">${task}</div>
+                        <div class="list-item-sub">Due: ${dueDate} • Priority: ${priority}</div>
+                    </div>
+                </div>
+                <div class="list-item-amount blue">
+                    ${amount > 0 ? formatINR(amount) : ''}
+                </div>
+            `;
+            todoListContainer.appendChild(item);
+        });
+
+        document.getElementById('todoCount').innerText = `${pendingCount} Active`;
+        document.getElementById('todoCompletedCount').innerText = `${completedCount} Completed`;
+
         // Net Worth
         const totalAssets = liquidBalance + totalFD + totalBusiness + totalStocks;
         const netWorth = totalAssets - totalLoans;
@@ -884,17 +989,37 @@ async function loadData() {
 
 // Render Charts
 function renderCharts(liquid, fd, business, stocks, income, expense) {
-    // 1. Income vs Expense Bar Chart
+    // 1. Income vs Expense Line Graph Chart
     const ctxIncExp = document.getElementById('incomeExpenseChart').getContext('2d');
     if (incomeExpenseChartInstance) incomeExpenseChartInstance.destroy();
 
     incomeExpenseChartInstance = new Chart(ctxIncExp, {
-        type: 'bar',
+        type: 'line',
         data: {
-            labels: ['Flow'],
+            labels: ['Current Overview'],
             datasets: [
-                { label: 'Income', data: [income], backgroundColor: '#22c55e', borderRadius: 8 },
-                { label: 'Expense', data: [expense], backgroundColor: '#ef4444', borderRadius: 8 }
+                { 
+                    label: 'Income', 
+                    data: [income], 
+                    borderColor: '#22c55e',
+                    backgroundColor: 'rgba(34, 197, 94, 0.15)',
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#22c55e',
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                },
+                { 
+                    label: 'Expense', 
+                    data: [expense], 
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#ef4444',
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                }
             ]
         },
         options: {
@@ -951,6 +1076,7 @@ function toggleFormFields() {
     document.getElementById('fieldsBusiness').style.display = selected === 'Business' ? 'block' : 'none';
     document.getElementById('fieldsLoans').style.display = selected === 'Loans' ? 'block' : 'none';
     document.getElementById('fieldsStocks').style.display = selected === 'Stocks' ? 'block' : 'none';
+    document.getElementById('fieldsTodo').style.display = selected === 'To Do List' ? 'block' : 'none';
 }
 
 function calcStockTotal() {
@@ -1010,8 +1136,15 @@ async function submitData(e) {
             Price: Number(document.getElementById('stockPrice').value) || 0,
             "Total Value": Number(document.getElementById('stockTotal').value) || 0
         };
+   } else if (sheetName === 'To Do List') {
+        rowData = {
+            Task: document.getElementById('todoTask').value,
+            Amount: Number(document.getElementById('todoAmount').value) || 0,
+            "Due Date": document.getElementById('todoDueDate').value,
+            Priority: document.getElementById('todoPriority').value,
+            Status: 'Pending'
+        };
     }
-
     try {
         await fetch(SCRIPT_URL, {
             method: 'POST',
